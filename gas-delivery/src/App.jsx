@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Routes, Route, useParams, Navigate } from 'react-router-dom';
 import './App.css';
 import Header from './components/Header';
@@ -5,10 +6,13 @@ import ProductSelector from './components/ProductSelector';
 import ZoneSelector from './components/ZoneSelector';
 import CheckoutForm from './components/CheckoutForm';
 import Summary from './components/Summary';
-import { agencias } from './data/agencias';
+import AdminPanel from './components/AdminPanel';
 
 // Importamos el Proveedor y el Hook del Contexto
 import { OrderProvider, useOrder } from './context/OrderContext';
+
+// Importamos nuestra nueva Mock API (reemplaza la importación estática anterior)
+import { getAgenciaBySlug } from './services/api.js';
 
 function TiendaAgenciaContent() {
   const { agencia, pedidoConfirmado, setPedidoConfirmado, datosUsuario } = useOrder();
@@ -54,9 +58,37 @@ function TiendaAgencia({ agencia }) {
 
 function AgenciaRouter() {
   const { agenciaSlug } = useParams();
-  const agenciaData = agencias[agenciaSlug];
+  
+  // Estados para manejar la carga de datos asíncronos
+  const [agenciaData, setAgenciaData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!agenciaData) {
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+
+    // Llamada a la Mock API
+    getAgenciaBySlug(agenciaSlug)
+      .then((data) => {
+        setAgenciaData(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [agenciaSlug]);
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-main)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <h2>Cargando tienda... ⏳</h2>
+      </div>
+    );
+  }
+
+  if (error || !agenciaData) {
     return (
       <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-main)' }}>
         <h2>Agencia no encontrada 😕</h2>
@@ -73,6 +105,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/distribuidora-martinez" replace />} />
       <Route path="/:agenciaSlug" element={<AgenciaRouter />} />
+      <Route path="/:agenciaSlug/admin" element={<AdminPanel />} />
     </Routes>
   );
 }
