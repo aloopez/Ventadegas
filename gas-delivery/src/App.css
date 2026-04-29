@@ -1,0 +1,349 @@
+/* App.css - Diseño Moderno con Modo Oscuro Automático */
+
+:root {
+  /* MODO CLARO (Por defecto) */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  
+  --bg-body: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-element: #f8fafc;
+  
+  --border-color: #e2e8f0;
+  
+  --success: #16a34a;
+  --success-bg: #dcfce7;
+  --error: #dc2626;
+  --error-bg: #fef2f2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* MODO OSCURO (Se activa si el celular está en modo oscuro) */
+    --primary: #3b82f6; 
+    --primary-hover: #60a5fa;
+    --primary-light: #1e3a8a; /* Azul muy oscuro para resaltes */
+    
+    --text-main: #f8fafc; /* Texto blanco suave */
+    --text-muted: #94a3b8; /* Texto gris claro */
+    
+    --bg-body: #0f172a; /* Fondo principal oscuro (casi negro) */
+    --bg-card: #1e293b; /* Fondo de la app/header oscuro */
+    --bg-element: #334155; /* Fondo de inputs y botones internos */
+    
+    --border-color: #475569;
+    
+    --success: #4ade80;
+    --success-bg: #14532d;
+    --error: #f87171;
+    --error-bg: #7f1d1d;
+  }
+}
+
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-main);
+  background: var(--bg-card); /* Ajustado para pantallas anchas */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Contenedor principal estilo Tarjeta */
+.page {
+  max-width: 100%;
+  margin: 0;
+  background: var(--bg-card);
+  border-radius: 0;
+  box-shadow: none; 
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+/* Header rediseñado */
+.header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.5rem;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.logo-box {
+  width: 42px;
+  height: 42px;
+  background: #fef08a; /* Este lo mantenemos brillante como acento */
+  color: #000; /* Aseguramos que el emoji resalte */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+.site-name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-main);
+}
+.tagline {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-left: 54px;
+}
+
+/* Secciones y Layout */
+.content { padding: 1.5rem; }
+.section { margin-bottom: 1.5rem; }
+.step-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+/* Productos (Tarjetas clickeables) */
+.prod-list { display: flex; flex-direction: column; gap: 10px; }
+.prod-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border: 2px solid var(--border-color);
+  border-radius: 14px;
+  cursor: pointer;
+  background: var(--bg-card);
+  transition: all 0.2s ease;
+}
+.prod-row:hover { border-color: var(--text-muted); transform: translateY(-1px); }
+.prod-row.sel {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+.prod-left { display: flex; align-items: center; gap: 14px; }
+.prod-icon {
+  width: 40px; height: 40px;
+  background: var(--bg-element);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.prod-name { font-size: 16px; font-weight: 600; color: var(--text-main); }
+.prod-use { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+.prod-price { font-size: 17px; font-weight: 700; color: var(--text-main); }
+
+/* Inputs y Formularios */
+label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  margin: 16px 0 6px;
+}
+input[type="text"], input[type="tel"], select, textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-element);
+  color: var(--text-main);
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.2s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+textarea { height: 80px; resize: none; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Botones de Selección (Zonas y Horas) */
+.zona-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hora-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.zona-btn, .hora-btn {
+  padding: 10px 14px;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-card);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.zona-btn:hover, .hora-btn:hover { border-color: var(--text-main); color: var(--text-main); }
+.zona-btn.sel, .hora-btn.sel {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+}
+
+/* Controles de Cantidad */
+.qty-wrap { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.qty-label { font-size: 15px; font-weight: 500; color: var(--text-main); }
+.qty-control {
+  display: flex; align-items: center;
+  background: var(--bg-element); border: 2px solid var(--border-color);
+  border-radius: 12px; overflow: hidden;
+}
+.qty-btn {
+  width: 44px; height: 44px; border: none; background: transparent;
+  font-size: 22px; cursor: pointer; color: var(--text-main);
+}
+.qty-btn:hover { background: var(--border-color); }
+.qty-num { width: 44px; text-align: center; font-size: 16px; font-weight: 700; color: var(--text-main); }
+
+/* Botón GPS */
+.btn-gps {
+  width: 100%; padding: 12px;
+  border: 2px dashed var(--primary);
+  border-radius: 12px; background: var(--primary-light);
+  color: var(--primary); font-weight: 600; font-size: 15px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-gps:hover { background: var(--border-color); }
+
+/* Estados y Alertas del GPS */
+.gps-alert {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease;
+}
+.gps-alert.loading { 
+  background: var(--primary-light); 
+  color: var(--primary); 
+  border: 1px solid var(--border-color); 
+}
+.gps-alert.success { 
+  background: var(--success-bg); 
+  color: var(--success); 
+  border: 1px solid var(--success); 
+}
+.gps-alert.error { 
+  background: var(--error-bg); 
+  color: var(--error); 
+  border: 1px solid var(--error); 
+}
+.gps-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  margin-left: 4px;
+}
+.btn-gps:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Resumen y Botón Final */
+.divider { border: none; border-top: 2px dashed var(--border-color); margin: 2rem 0; }
+.resumen {
+  background: var(--bg-element); border-radius: 16px; padding: 1.25rem; margin-bottom: 1.5rem;
+}
+.res-row { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px; color: var(--text-muted); }
+.res-row.total {
+  font-size: 18px; font-weight: 700; color: var(--text-main);
+  border-top: 2px solid var(--border-color); padding-top: 12px; margin-top: 8px;
+}
+.gratis { background: var(--success-bg); color: var(--success); padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+
+.btn-pedir {
+  width: 100%; padding: 16px;
+  background: var(--primary); color: #ffffff;
+  border: none; border-radius: 14px;
+  font-size: 18px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+.btn-pedir:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+.nota-pie { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 16px; line-height: 1.6; }
+
+/* Pantalla de Éxito */
+.success { text-align: center; padding: 4rem 2rem; display: none; }
+.success.show { display: block; animation: fadeIn 0.4s ease; }
+.check-circle {
+  width: 80px; height: 80px; margin: 0 auto 1.5rem;
+  background: var(--success); color: white;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 40px; box-shadow: 0 10px 25px rgba(22, 163, 74, 0.3);
+}
+.order-id { font-size: 24px; font-weight: 700; margin-bottom: 12px; color: var(--text-main); }
+.order-sub { font-size: 16px; color: var(--text-muted); margin-bottom: 2rem; }
+.reset-btn {
+  background: none; border: none; font-size: 15px; color: var(--primary);
+  font-weight: 600; text-decoration: underline; cursor: pointer;
+}
+
+/* Estilos de Validación */
+.input-error {
+  border-color: var(--error) !important;
+  background: var(--error-bg) !important;
+}
+
+.error-text {
+  display: block;
+  font-size: 12px;
+  color: var(--error);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Botón inactivo/bloqueado */
+.btn-pedir:disabled {
+  background: var(--border-color);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Estilos para el mini-mapa */
+.map-container {
+  margin-top: 10px;
+  animation: fadeIn 0.5s ease;
+}
+
+.map-help {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* Sombra suave para que el mapa resalte */
+iframe {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  /* Filtro opcional para que el mapa no brille tanto en modo oscuro */
+  iframe {
+    filter: grayscale(0.2) invert(0.05);
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
