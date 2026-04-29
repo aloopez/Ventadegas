@@ -82,4 +82,4 @@ export default function ZoneSelector() {
       <input type="text" name="ref" value={datosUsuario.ref} onChange={handleChange} placeholder="Ej: portón negro, frente al parque" />
     </div>
   );
-}
+} 
