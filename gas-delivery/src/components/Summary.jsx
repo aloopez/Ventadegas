@@ -1,4 +1,10 @@
-export default function Summary({ producto, cantidad, totales, hacerPedido, formularioValido }) {
+import { useOrder } from '../context/OrderContext';
+
+export default function Summary() {
+  const { producto, cantidad, calcularTotal, hacerPedido, esFormularioValido } = useOrder();
+  const totales = calcularTotal();
+  const valido = esFormularioValido();
+
   return (
     <>
       <div className="resumen">
@@ -20,13 +26,12 @@ export default function Summary({ producto, cantidad, totales, hacerPedido, form
         </div>
       </div>
 
-      {/* Aquí aplicamos la propiedad 'disabled' dependiendo si es válido o no */}
       <button 
         className="btn-pedir" 
         onClick={hacerPedido}
-        disabled={!formularioValido}
+        disabled={!valido}
       >
-        {formularioValido ? 'Confirmar pedido' : 'Completa tus datos'}
+        {valido ? 'Confirmar pedido' : 'Completa tus datos'}
       </button>
       
       <p className="nota-pie">

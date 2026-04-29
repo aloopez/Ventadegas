@@ -5,7 +5,7 @@ export const agencias = {
     nombre: "Distribuidora Martínez",
     slogan: "El gas más rápido de Sonsonate",
     logo: "🔥",
-    telefonoWhatsApp: "50370000001", // El número del dueño
+    telefonoWhatsApp: "50376091439", // El número del dueño
     zonas: ["Sonsonate Centro", "Sonzacate", "San Antonio del Monte"],
     tema: { primary: "#ef4444" } // Podrías cambiar el color primario según el logo del cliente
   },

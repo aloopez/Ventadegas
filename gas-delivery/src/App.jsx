@@ -1,98 +1,39 @@
-// src/App.jsx
-import { useState } from 'react';
+import { Routes, Route, useParams, Navigate } from 'react-router-dom';
 import './App.css';
 import Header from './components/Header';
 import ProductSelector from './components/ProductSelector';
 import ZoneSelector from './components/ZoneSelector';
 import CheckoutForm from './components/CheckoutForm';
 import Summary from './components/Summary';
+import { agencias } from './data/agencias';
 
-function App() {
-  const [producto, setProducto] = useState({ id: '10', price: 8.50, name: '10 lbs' });
-  const [cantidad, setCantidad] = useState(1);
-  const [zona, setZona] = useState('San Salvador');
-  const [hora, setHora] = useState('Lo antes posible');
-  
-  // Agrupamos los datos del usuario en un solo estado
-  const [datosUsuario, setDatosUsuario] = useState({ 
-    nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '' 
-  });
-  
-  const [pedidoConfirmado, setPedidoConfirmado] = useState(false);
+// Importamos el Proveedor y el Hook del Contexto
+import { OrderProvider, useOrder } from './context/OrderContext';
 
-  const productos = [
-    { id: '10', price: 8.50, name: '10 lbs', uso: 'Uso diario, cocina familiar' },
-    { id: '25', price: 18.00, name: '25 lbs', uso: 'Familia grande' },
-    { id: '35', price: 24.50, name: '35 lbs', uso: 'Negocio pequeño' },
-    { id: '100', price: 60.00, name: '100 lbs', uso: 'Uso industrial' }
-  ];
-
-  const cambiarCantidad = (delta) => setCantidad(prev => Math.max(1, Math.min(10, prev + delta)));
-
-  const calcularTotal = () => {
-    const sub = producto.price * cantidad;
-    const envio = sub >= 30 ? 0 : 3.00;
-    return { sub, envio, total: sub + envio };
-  };
-
-  const hacerPedido = () => {
-    // Validamos que los campos obligatorios tengan algo escrito
-    if (!datosUsuario.nombre || !datosUsuario.tel || !datosUsuario.dir) {
-      alert('Por favor completa tu nombre, teléfono y dirección.');
-      return;
-    }
-    setPedidoConfirmado(true);
-    window.scrollTo(0, 0); // Sube la pantalla arriba al confirmar
-  };
-
-  // Lógica de validación
-  const esFormularioValido = () => {
-    const numerosTel = datosUsuario.tel.replace(/\D/g, '');
-    const telefonoOk = numerosTel.length === 8 && /^[267]/.test(numerosTel);
-    const nombreOk = datosUsuario.nombre.trim().length > 2;
-    const direccionOk = datosUsuario.dir.trim().length > 5;
-    
-    return telefonoOk && nombreOk && direccionOk;
-  };
+function TiendaAgenciaContent() {
+  const { agencia, pedidoConfirmado, setPedidoConfirmado, datosUsuario } = useOrder();
 
   return (
-    <div className="page">
+    <div className="page" style={{ '--primary': agencia.tema?.primary || '#2563eb' }}>
       <Header />
 
       {!pedidoConfirmado ? (
         <div className="main">
           <div className="content">
-            <ProductSelector 
-              productos={productos} productoActivo={producto}
-              setProducto={setProducto} cantidad={cantidad} cambiarCantidad={cambiarCantidad}
-            />
+            <ProductSelector />
             <hr className="divider" />
-            
-            {/* NUEVOS COMPONENTES AQUI */}
-            <ZoneSelector 
-              zonaActiva={zona} setZonaActiva={setZona} 
-              datos={datosUsuario} setDatos={setDatosUsuario} 
-            />
+            <ZoneSelector />
             <hr className="divider" />
-            
-            <CheckoutForm 
-              datos={datosUsuario} setDatos={setDatosUsuario} 
-              horaActiva={hora} setHoraActiva={setHora} 
-            />
+            <CheckoutForm />
             <hr className="divider" />
-
-            <Summary 
-              producto={producto} cantidad={cantidad} 
-              totales={calcularTotal()} hacerPedido={hacerPedido}
-              formularioValido={esFormularioValido()}
-            />
+            <Summary />
           </div>
         </div>
       ) : (
         <div className="success show">
           <div className="check-circle">✓</div>
           <div className="order-id">¡Pedido Confirmado!</div>
-          <div className="order-sub">Pronto te contactaremos al {datosUsuario.tel}.</div>
+          <div className="order-sub">Pronto te contactarán desde {agencia.nombre} al {datosUsuario.tel}.</div>
           <button className="reset-btn" onClick={() => setPedidoConfirmado(false)}>
             Hacer otro pedido
           </button>
@@ -102,4 +43,36 @@ function App() {
   );
 }
 
-export default App;
+// Envolvemos el contenido con el Proveedor del Estado
+function TiendaAgencia({ agencia }) {
+  return (
+    <OrderProvider agencia={agencia}>
+      <TiendaAgenciaContent />
+    </OrderProvider>
+  );
+}
+
+function AgenciaRouter() {
+  const { agenciaSlug } = useParams();
+  const agenciaData = agencias[agenciaSlug];
+
+  if (!agenciaData) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-main)' }}>
+        <h2>Agencia no encontrada 😕</h2>
+        <p>Verifica que el enlace de la distribuidora sea correcto.</p>
+      </div>
+    );
+  }
+
+  return <TiendaAgencia agencia={agenciaData} />;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/distribuidora-martinez" replace />} />
+      <Route path="/:agenciaSlug" element={<AgenciaRouter />} />
+    </Routes>
+  );
+}

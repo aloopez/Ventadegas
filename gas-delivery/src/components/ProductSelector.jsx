@@ -1,5 +1,15 @@
-// src/components/ProductSelector.jsx
-export default function ProductSelector({ productos, productoActivo, setProducto, cantidad, cambiarCantidad }) {
+import { useOrder } from '../context/OrderContext';
+
+export default function ProductSelector() {
+  const { producto: productoActivo, setProducto, cantidad, cambiarCantidad } = useOrder();
+
+  const productos = [
+    { id: '10', price: 8.50, name: '10 lbs', uso: 'Uso diario, cocina familiar' },
+    { id: '25', price: 18.00, name: '25 lbs', uso: 'Familia grande' },
+    { id: '35', price: 24.50, name: '35 lbs', uso: 'Negocio pequeño' },
+    { id: '100', price: 60.00, name: '100 lbs', uso: 'Uso industrial' }
+  ];
+
   return (
     <div className="section">
       <div className="step-label">Paso 1 — Elige tu cilindro</div>
