@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // Creamos un pool de conexiones (recomendado para producción)
-const pool = mysql.createPool({
+export const pool = mysql.createPool({
   // process.env buscará las variables cuando subamos a Render
   // Si no las encuentra (como en tu compu), usará los textos entre comillas
   host: process.env.DB_HOST || 'AQUI_PEGA_EL_HOST_DE_AIVEN_LARGO',
