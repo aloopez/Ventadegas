@@ -9,7 +9,9 @@ export default function Summary() {
     <>
       <div className="resumen">
         <div className="res-row">
-          <span>Cilindro {producto.name} × {cantidad}</span>
+          <span>
+            {producto ? `Cilindro ${producto.name} × ${cantidad}` : '⚠️ Elige un cilindro arriba'}
+          </span>
           <span>${totales.sub.toFixed(2)}</span>
         </div>
         <div className="res-row">

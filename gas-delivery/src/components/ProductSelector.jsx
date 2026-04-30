@@ -14,9 +14,9 @@ export default function ProductSelector() {
         setProductos(data);
         setLoading(false);
         // Seleccionamos el primero automáticamente si no hay uno seleccionado
-        if (data.length > 0 && !productoActivo?.id) {
-          setProducto(data[0]);
-        }
+        // if (data.length > 0 && !productoActivo?.id) {
+        //   setProducto(data[0]);
+        // }
       })
       .catch(err => console.error("Error cargando productos:", err));
   }, [agencia.slug]);
