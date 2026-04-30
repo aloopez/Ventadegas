@@ -29,15 +29,82 @@ export function OrderProvider({ children, agencia }) {
     return { sub, envio, total: sub + envio };
   };
 
-  const hacerPedido = () => {
-    if (!datosUsuario.nombre || !datosUsuario.tel || !datosUsuario.dir) {
-      alert('Por favor completa tu nombre, teléfono y dirección.');
+ const hacerPedido = async () => {
+    // 1. Usamos tu función de validación existente
+    if (!esFormularioValido()) {
+      alert('Por favor completa tu nombre, teléfono y dirección correctamente.');
       return;
     }
+
     const totales = calcularTotal();
-    const mensaje = `*Nuevo Pedido*...`; // (Tu lógica de WhatsApp se mantiene igual)
-    window.open(`https://wa.me/${agencia.telefonoWhatsApp}?text=${encodeURIComponent(mensaje)}`, '_blank');
-    setPedidoConfirmado(true);
+
+    // 2. Armamos los detalles para la columna "detalles" de la BD
+    const textoDetalles = `
+      Producto: ${cantidad}x Cilindro ${producto.name}
+      Zona: ${zona}
+      Hora de entrega: ${hora}
+      Referencia: ${datosUsuario.ref || 'N/A'}
+      Forma de pago: ${datosUsuario.pago}
+      Nota: ${datosUsuario.nota || 'Ninguna'}
+    `.trim();
+
+    // 3. Construimos el payload exacto para tu ruta POST /api/pedidos
+    const payload = {
+      agencia_id: agencia?.id, 
+      cliente_nombre: datosUsuario.nombre,
+      cliente_telefono: datosUsuario.tel,
+      direccion_entrega: `${datosUsuario.dir} (${zona})`, // Unificamos dirección y zona
+      total: totales.total,
+      detalles: textoDetalles
+    };
+
+    try {
+      // 4. Hacemos la petición al backend
+     const response = await fetch('http://localhost:3000/api/pedidos', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(payload)
+});
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // 5. Si la base de datos guardó el pedido, mandamos el WhatsApp
+        // Incluimos el código generado (data.codigo) para que la agencia pueda rastrearlo
+        const mensajeWpp = `*Nuevo Pedido (${data.codigo})*
+Cliente: ${datosUsuario.nombre}
+Teléfono: ${datosUsuario.tel}
+Dirección: ${datosUsuario.dir}, ${zona}
+Referencia: ${datosUsuario.ref || 'N/A'}
+Producto: ${cantidad}x Cilindro ${producto.name}
+Total a pagar: $${totales.total.toFixed(2)}
+Pago: ${datosUsuario.pago}
+Hora de entrega: ${hora}
+Notas: ${datosUsuario.nota || 'Ninguna'}`;
+
+       // 1. Tomamos el teléfono (ya sea el de WhatsApp o el normal)
+const telefonoAgencia = agencia.telefonoWhatsApp || agencia.telefono;
+
+// 2. Le quitamos los guiones o cualquier cosa que no sea número usando RegEx
+const numeroLimpio = telefonoAgencia.replace(/\D/g, '');
+
+// 3. Le agregamos el código de El Salvador (503)
+const numeroWhatsApp = `503${numeroLimpio}`;
+
+// 4. Ahora sí, abrimos la ventana con el número correcto
+window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensajeWpp)}`, '_blank');
+        // Confirmamos el pedido en el estado de React
+        setPedidoConfirmado(true);
+      } else {
+        // Si el backend devuelve un error (ej. 400 o 500)
+        alert(`Error al procesar el pedido: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error de conexión:", error);
+      alert("No se pudo conectar con el servidor. Por favor, revisa tu conexión a internet.");
+    }
   };
 
   const esFormularioValido = () => {
