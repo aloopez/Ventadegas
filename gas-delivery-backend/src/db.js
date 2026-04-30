@@ -12,6 +12,11 @@ export const pool = mysql.createPool({
   password: process.env.DB_PASSWORD || 'AQUI_PEGA_TU_CONTRASEÑA_DE_AIVEN',
   database: process.env.DB_NAME || 'ventadegas',
   port: process.env.DB_PORT || 25060, // Aiven suele usar el puerto 25060
+
+  ssl: {
+    rejectUnauthorized: false
+  },
+  
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
