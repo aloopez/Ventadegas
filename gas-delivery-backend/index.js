@@ -67,19 +67,42 @@ app.get('/api/agencias/:slug/productos', async (req, res) => {
 });
 
 // 3. CREAR UN PEDIDO (Desde la Tienda)
+// gas-delivery-backend/index.js
+
+// 3. CREAR UN PEDIDO (Desde la Tienda)
 app.post('/api/pedidos', async (req, res) => {
-  const { agencia_id, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles } = req.body;
+  const { agencia_id, dui, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles } = req.body;
   const codigo = generarCodigo();
 
   try {
-    const query = `INSERT INTO pedidos (codigo_pedido, agencia_id, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?)`;
-    const [result] = await pool.query(query, [codigo, agencia_id, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles]);
+    // 1. Buscar si el cliente ya existe por su DUI
+    const [clienteExistente] = await pool.query('SELECT id FROM clientes WHERE dui = ?', [dui]);
     
+    let cliente_id;
+
+    if (clienteExistente.length > 0) {
+      // El cliente ya existe, tomamos su ID
+      cliente_id = clienteExistente[0].id;
+    } else {
+      // El cliente es nuevo, lo insertamos en la BD
+      const [nuevoCliente] = await pool.query(
+        'INSERT INTO clientes (dui, nombre, telefono) VALUES (?, ?, ?)', 
+        [dui, cliente_nombre, cliente_telefono]
+      );
+      cliente_id = nuevoCliente.insertId;
+    }
+
+    // 2. Insertar el pedido usando el cliente_id
+    const queryPedido = `INSERT INTO pedidos (codigo_pedido, agencia_id, cliente_id, direccion_entrega, total, detalles)
+                         VALUES (?, ?, ?, ?, ?, ?)`;
+                         
+    const [result] = await pool.query(queryPedido, [codigo, agencia_id, cliente_id, direccion_entrega, total, detalles]);
+         
     res.status(201).json({ id: result.insertId, codigo });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al crear el pedido' });
+    console.error("Error al crear pedido:", err);
+    res.status(500).json({ error: 'Error al procesar el pedido o cliente' });
   }
 });
 

@@ -2,9 +2,8 @@ import { useOrder } from '../context/OrderContext';
 
 export default function CheckoutForm() {
   const { datosUsuario, setDatosUsuario, hora: horaActiva, setHora } = useOrder();
-  
   const horarios = [
-    'Lo antes posible', '10:00 – 12:00', '12:00 – 14:00', '14:00 – 17:00', '17:00 – 19:00'
+    'Lo antes posible', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 17:00', '17:00 - 19:00'
   ];
 
   const handleChange = (e) => {
@@ -21,12 +20,40 @@ export default function CheckoutForm() {
     setDatosUsuario({ ...datosUsuario, tel: formattedValue });
   };
 
+  // Función para dar formato al DUI automáticamente
+  const handleDuiChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ''); 
+    if (value.length > 9) value = value.slice(0, 9); 
+    
+    let formattedValue = value;
+    if (value.length > 8) {
+      formattedValue = `${value.slice(0, 8)}-${value.slice(8)}`;
+    }
+    setDatosUsuario({ ...datosUsuario, dui: formattedValue });
+  };
+
   const numerosTel = datosUsuario.tel.replace(/\D/g, '');
   const telInvalido = numerosTel.length > 0 && (numerosTel.length < 8 || !/^[267]/.test(numerosTel));
+  
+  // Validar si el DUI está incompleto
+  const duiInvalido = datosUsuario.dui.length > 0 && !/^\d{8}-\d$/.test(datosUsuario.dui);
 
   return (
     <div className="section">
-      <div className="step-label">Paso 3 — Tus datos</div>
+      <div className="step-label">Paso 3 – Tus datos</div>
+      
+      <div style={{ marginBottom: '12px' }}>
+        <label>DUI *</label>
+        <input 
+          type="text" 
+          name="dui" 
+          value={datosUsuario.dui} 
+          onChange={handleDuiChange} 
+          placeholder="Ej: 12345678-9" 
+          className={duiInvalido ? 'input-error' : ''} 
+        />
+        {duiInvalido && <span className="error-text">Debe tener 9 dígitos y un guion</span>}
+      </div>
 
       <div className="row2">
         <div>

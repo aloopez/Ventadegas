@@ -8,7 +8,7 @@ export function OrderProvider({ children, agencia }) {
   const [zona, setZona] = useState(agencia?.zonas?.[0] || 'Local'); 
   const [hora, setHora] = useState('Lo antes posible');
   const [datosUsuario, setDatosUsuario] = useState({ 
-    nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '' 
+    dui: '', nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '' 
   });
   const [pedidoConfirmado, setPedidoConfirmado] = useState(false);
 
@@ -45,6 +45,7 @@ export function OrderProvider({ children, agencia }) {
 
     const payload = {
       agencia_id: agencia?.id, 
+      dui: datosUsuario.dui,
       cliente_nombre: datosUsuario.nombre,
       cliente_telefono: datosUsuario.tel,
       direccion_entrega: `${datosUsuario.dir} (${zona})`,
@@ -64,30 +65,7 @@ export function OrderProvider({ children, agencia }) {
       const data = await response.json();
 
       if (response.ok) {
-        // CORRECCIÓN 1: Cambiamos producto.name por producto.peso en el mensaje
-        const mensajeWpp = `*Nuevo Pedido (${data.codigo})*
-Cliente: ${datosUsuario.nombre}
-Teléfono: ${datosUsuario.tel}
-Dirección: ${datosUsuario.dir}, ${zona}
-Referencia: ${datosUsuario.ref || 'N/A'}
-Producto: ${cantidad}x Cilindro ${producto.peso}
-Total a pagar: $${totales.total.toFixed(2)}
-Pago: ${datosUsuario.pago}
-Hora de entrega: ${hora}
-Notas: ${datosUsuario.nota || 'Ninguna'}`;
-
-        // CORRECCIÓN 2: Lógica robusta para el número y enlace de iOS/Android
-        const telefonoAgencia = agencia.telefonoWhatsApp || agencia.telefono;
-        const numeroLimpio = telefonoAgencia.replace(/\D/g, '');
-        // Verificamos si ya trae el 503 para no duplicarlo
-        const numeroWhatsApp = numeroLimpio.startsWith('503') ? numeroLimpio : `503${numeroLimpio}`;
-
-        // Usamos api.whatsapp.com en lugar de wa.me
-        const urlWpp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensajeWpp)}`;
-        
-        // Usamos location.href para evitar bloqueos de pop-ups en Safari/iPhone
-        window.location.href = urlWpp;
-        
+      
         setPedidoConfirmado(true);
       } else {
         alert(`Error al procesar el pedido: ${data.error}`);
@@ -100,6 +78,8 @@ Notas: ${datosUsuario.nota || 'Ninguna'}`;
 
   const esFormularioValido = () => {
     const numerosTel = datosUsuario.tel.replace(/\D/g, '');
+    const duiValido = /^\d{8}-\d$/.test(datosUsuario.dui);
+
     return (
       producto !== null && 
       numerosTel.length === 8 && 
