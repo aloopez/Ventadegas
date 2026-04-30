@@ -50,7 +50,8 @@ export function OrderProvider({ children, agencia }) {
       cliente_telefono: datosUsuario.tel,
       direccion_entrega: `${datosUsuario.dir} (${zona})`,
       total: totales.total,
-      detalles: textoDetalles
+      detalles: textoDetalles,
+      cantidad: cantidad
     };
 
     try {

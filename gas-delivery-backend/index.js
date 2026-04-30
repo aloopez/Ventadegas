@@ -67,11 +67,30 @@ app.get('/api/agencias/:slug/productos', async (req, res) => {
 });
 
 // 3. CREAR UN PEDIDO (Desde la Tienda)
-// gas-delivery-backend/index.js
-
-// 3. CREAR UN PEDIDO (Desde la Tienda)
 app.post('/api/pedidos', async (req, res) => {
-  const { agencia_id, dui, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles } = req.body;
+  // Extraemos 'cantidad' del body para validarla
+  const { agencia_id, dui, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles, cantidad } = req.body;
+  
+  // --- REGLA 1: HORARIOS DE OPERACIÓN ---
+  // Forzamos la zona horaria a El Salvador (GMT-6)
+  const svTime = new Date(new Date().toLocaleString("en-US", { timeZone: "America/El_Salvador" }));
+  const horaActual = svTime.getHours();
+  
+  if (horaActual < 7 || horaActual >= 19) {
+    return res.status(400).json({ error: 'Fuera de horario de servicio. Atendemos de 7:00 AM a 7:00 PM.' });
+  }
+
+  // --- REGLA 2: VALIDACIÓN DE TELÉFONO ESTRICTA ---
+  const telefonoLimpio = cliente_telefono.replace(/\D/g, '');
+  if (!/^[267]\d{7}$/.test(telefonoLimpio)) {
+    return res.status(400).json({ error: 'Número de teléfono inválido. Debe iniciar con 2, 6 o 7 y tener 8 dígitos.' });
+  }
+
+  // --- REGLA 3: LÍMITE DE TAMBOS ---
+  if (!cantidad || cantidad < 1 || cantidad > 10) {
+    return res.status(400).json({ error: 'La cantidad de cilindros debe estar entre 1 y 10.' });
+  }
+
   const codigo = generarCodigo();
 
   try {
@@ -110,9 +129,12 @@ app.post('/api/pedidos', async (req, res) => {
 app.get('/api/agencias/:slug/pedidos', async (req, res) => {
   const { slug } = req.params;
   try {
+    // CORRECCIÓN PROACTIVA: Unimos la tabla clientes para recuperar el nombre y teléfono
     const query = `
-      SELECT p.* FROM pedidos p 
+      SELECT p.*, c.nombre as cliente_nombre, c.telefono as cliente_telefono, c.dui 
+      FROM pedidos p 
       JOIN agencias a ON p.agencia_id = a.id 
+      JOIN clientes c ON p.cliente_id = c.id
       WHERE a.slug = ? 
       ORDER BY p.fecha_creacion DESC`;
     const [pedidos] = await pool.query(query, [slug]);
