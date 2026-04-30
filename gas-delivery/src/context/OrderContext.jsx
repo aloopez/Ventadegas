@@ -3,7 +3,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const OrderContext = createContext();
 
 export function OrderProvider({ children, agencia }) {
-  // 1. CAMBIO AQUÍ: Iniciamos el producto como null para obligar al usuario a elegir
   const [producto, setProducto] = useState(null);
   const [cantidad, setCantidad] = useState(1);
   const [zona, setZona] = useState(agencia?.zonas?.[0] || 'Local'); 
@@ -22,7 +21,6 @@ export function OrderProvider({ children, agencia }) {
   const cambiarCantidad = (delta) => setCantidad(prev => Math.max(1, Math.min(10, prev + delta)));
 
   const calcularTotal = () => {
-    // Usamos .precio en lugar de .price
     const sub = (producto?.precio || 0) * cantidad;
     const envio = sub >= 30 ? 0 : 3.00;
     return { sub, envio, total: sub + envio };
@@ -66,22 +64,30 @@ export function OrderProvider({ children, agencia }) {
       const data = await response.json();
 
       if (response.ok) {
+        // CORRECCIÓN 1: Cambiamos producto.name por producto.peso en el mensaje
         const mensajeWpp = `*Nuevo Pedido (${data.codigo})*
 Cliente: ${datosUsuario.nombre}
 Teléfono: ${datosUsuario.tel}
 Dirección: ${datosUsuario.dir}, ${zona}
 Referencia: ${datosUsuario.ref || 'N/A'}
-Producto: ${cantidad}x Cilindro ${producto.name}
+Producto: ${cantidad}x Cilindro ${producto.peso}
 Total a pagar: $${totales.total.toFixed(2)}
 Pago: ${datosUsuario.pago}
 Hora de entrega: ${hora}
 Notas: ${datosUsuario.nota || 'Ninguna'}`;
 
+        // CORRECCIÓN 2: Lógica robusta para el número y enlace de iOS/Android
         const telefonoAgencia = agencia.telefonoWhatsApp || agencia.telefono;
         const numeroLimpio = telefonoAgencia.replace(/\D/g, '');
-        const numeroWhatsApp = `503${numeroLimpio}`;
+        // Verificamos si ya trae el 503 para no duplicarlo
+        const numeroWhatsApp = numeroLimpio.startsWith('503') ? numeroLimpio : `503${numeroLimpio}`;
 
-        window.open(`https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensajeWpp)}`, '_blank');
+        // Usamos api.whatsapp.com en lugar de wa.me
+        const urlWpp = `https://api.whatsapp.com/send?phone=${numeroWhatsApp}&text=${encodeURIComponent(mensajeWpp)}`;
+        
+        // Usamos location.href para evitar bloqueos de pop-ups en Safari/iPhone
+        window.location.href = urlWpp;
+        
         setPedidoConfirmado(true);
       } else {
         alert(`Error al procesar el pedido: ${data.error}`);
@@ -94,7 +100,6 @@ Notas: ${datosUsuario.nota || 'Ninguna'}`;
 
   const esFormularioValido = () => {
     const numerosTel = datosUsuario.tel.replace(/\D/g, '');
-    // 2. CAMBIO AQUÍ: Agregamos "producto !== null" a la validación
     return (
       producto !== null && 
       numerosTel.length === 8 && 
