@@ -19,6 +19,7 @@ app.get('/api/agencias/:slug', async (req, res) => {
   const { slug } = req.params;
   try {
     // Buscamos la agencia
+    console.log("Conectando a:", process.env.DB_HOST);
     const [agenciaRows] = await pool.query('SELECT * FROM agencias WHERE slug = ?', [slug]);
     
     if (agenciaRows.length === 0) {
