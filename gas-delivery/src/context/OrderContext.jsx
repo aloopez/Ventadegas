@@ -22,7 +22,8 @@ export function OrderProvider({ children, agencia }) {
   const cambiarCantidad = (delta) => setCantidad(prev => Math.max(1, Math.min(10, prev + delta)));
 
   const calcularTotal = () => {
-    const sub = (producto?.price || 0) * cantidad;
+    // Usamos .precio en lugar de .price
+    const sub = (producto?.precio || 0) * cantidad;
     const envio = sub >= 30 ? 0 : 3.00;
     return { sub, envio, total: sub + envio };
   };
@@ -36,7 +37,7 @@ export function OrderProvider({ children, agencia }) {
     const totales = calcularTotal();
 
     const textoDetalles = `
-      Producto: ${cantidad}x Cilindro ${producto.name}
+      Producto: ${cantidad}x Cilindro ${producto.peso} 
       Zona: ${zona}
       Hora de entrega: ${hora}
       Referencia: ${datosUsuario.ref || 'N/A'}
