@@ -102,8 +102,10 @@ export function OrderProvider({ children, agencia }) {
         // Convertimos el texto a formato de URL (cambia los espacios por %20, etc.)
         const urlWhatsApp = `https://wa.me/${numeroDistribuidora}?text=${encodeURIComponent(mensaje)}`;
 
-        // Abrimos WhatsApp en una pestaña nueva
-        window.open(urlWhatsApp, '_blank');
+        // MAGIA MÓVIL: En lugar de intentar abrir una pestaña nueva (que los celulares bloquean), 
+        // redirigimos la página actual. El celular detectará que es un enlace de WhatsApp 
+        // y automáticamente "saltará" a abrir la aplicación nativa.
+        window.location.href = urlWhatsApp;
 
       } else {
         alert(`Error al procesar el pedido: ${data.error}`);
