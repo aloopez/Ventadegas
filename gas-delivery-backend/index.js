@@ -72,13 +72,14 @@ app.post('/api/pedidos', async (req, res) => {
   const { agencia_id, dui, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles, cantidad } = req.body;
   
   // --- REGLA 1: HORARIOS DE OPERACIÓN ---
-  // Forzamos la zona horaria a El Salvador (GMT-6)
+  /* COMENTADO PARA TESTING
   const svTime = new Date(new Date().toLocaleString("en-US", { timeZone: "America/El_Salvador" }));
   const horaActual = svTime.getHours();
   
   if (horaActual < 7 || horaActual >= 19) {
     return res.status(400).json({ error: 'Fuera de horario de servicio. Atendemos de 7:00 AM a 7:00 PM.' });
   }
+  */
 
   // --- REGLA 2: VALIDACIÓN DE TELÉFONO ESTRICTA ---
   const telefonoLimpio = cliente_telefono.replace(/\D/g, '');

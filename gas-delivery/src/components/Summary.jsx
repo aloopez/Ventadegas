@@ -13,10 +13,10 @@ export default function Summary() {
     const svTime = new Date(new Date().toLocaleString("en-US", { timeZone: "America/El_Salvador" }));
     const hora = svTime.getHours();
     
-    // Si es antes de las 7:00 o después de las 18:59, cerramos la tienda
-    if (hora < 7 || hora >= 19) {
-      setTiendaAbierta(false);
-    }
+    // // Si es antes de las 7:00 o después de las 18:59, cerramos la tienda
+    // if (hora < 7 || hora >= 19) {
+    //   setTiendaAbierta(false);
+    // }
   }, []);
 
   return (
