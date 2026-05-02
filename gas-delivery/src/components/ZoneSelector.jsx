@@ -28,11 +28,21 @@ export default function ZoneSelector() {
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=es`);
           const data = await res.json();
-          setDatosUsuario({ ...datosUsuario, dir: data.display_name || `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}` });
-          setGpsEstado({ tipo: 'success', mensaje: '✓ Ubicación detectada y mapa cargado' });
+          setDatosUsuario({ 
+            ...datosUsuario, 
+            dir: data.display_name || `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`,
+            latitud: latitude,   // <-- GUARDAMOS COORDENADAS EXACTAS
+            longitud: longitude  // <-- GUARDAMOS COORDENADAS EXACTAS
+          });
+          setGpsEstado({ tipo: 'success', mensaje: '📍 Ubicación detectada y mapa cargado' });
         } catch (e) {
-          setDatosUsuario({ ...datosUsuario, dir: `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}` });
-          setGpsEstado({ tipo: 'success', mensaje: '✓ Coordenadas obtenidas' });
+          setDatosUsuario({ 
+            ...datosUsuario, 
+            dir: `Lat: ${latitude.toFixed(5)}, Lng: ${longitude.toFixed(5)}`,
+            latitud: latitude,   // <-- GUARDAMOS COORDENADAS EXACTAS
+            longitud: longitude  // <-- GUARDAMOS COORDENADAS EXACTAS
+          });
+          setGpsEstado({ tipo: 'success', mensaje: '📍 Coordenadas obtenidas' });
         }
       },
       (error) => {

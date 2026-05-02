@@ -8,7 +8,7 @@ export function OrderProvider({ children, agencia }) {
   const [zona, setZona] = useState(agencia?.zonas?.[0] || 'Local'); 
   const [hora, setHora] = useState('Lo antes posible');
   const [datosUsuario, setDatosUsuario] = useState({ 
-    dui: '', nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '' 
+    dui: '', nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '', latitud: null, longitud: null 
   });
   const [pedidoConfirmado, setPedidoConfirmado] = useState(false);
 
@@ -64,7 +64,9 @@ export function OrderProvider({ children, agencia }) {
       direccion_entrega: `${datosUsuario.dir} (${zona})`,
       total: totales.total,
       detalles: textoDetalles,
-      cantidad: cantidad
+      cantidad: cantidad,
+      latitud: datosUsuario.latitud,
+      longitud: datosUsuario.longitud
     };
 
     try {

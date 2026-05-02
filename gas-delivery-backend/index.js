@@ -93,7 +93,7 @@ app.get('/api/agencias/:slug/productos', async (req, res) => {
 // 3. CREAR UN PEDIDO (Desde la Tienda)
 app.post('/api/pedidos', async (req, res) => {
   // Extraemos 'cantidad' del body para validarla
-  const { agencia_id, dui, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles, cantidad } = req.body;
+  const { agencia_id, dui, cliente_nombre, cliente_telefono, direccion_entrega, total, detalles, cantidad, latitud, longitud } = req.body;
   
   // --- REGLA 1: HORARIOS DE OPERACIÓN ---
   /* COMENTADO PARA TESTING
@@ -136,12 +136,22 @@ app.post('/api/pedidos', async (req, res) => {
       cliente_id = nuevoCliente.insertId;
     }
 
-    // 2. Insertar el pedido usando el cliente_id
-    const queryPedido = `INSERT INTO pedidos (codigo_pedido, agencia_id, cliente_id, direccion_entrega, total, detalles)
-                         VALUES (?, ?, ?, ?, ?, ?)`;
+    // 2. Insertar el pedido usando el cliente_id (ACTUALIZADO CON GPS)
+    const queryPedido = `INSERT INTO pedidos (codigo_pedido, agencia_id, cliente_id, direccion_entrega, total, detalles, latitud, longitud)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
                          
-    const [result] = await pool.query(queryPedido, [codigo, agencia_id, cliente_id, direccion_entrega, total, detalles]);
-         
+    // Si latitud o longitud no vienen, mandamos null para que MySQL no se queje
+    const [result] = await pool.query(queryPedido, [
+      codigo, 
+      agencia_id, 
+      cliente_id, 
+      direccion_entrega, 
+      total, 
+      detalles, 
+      latitud || null, 
+      longitud || null
+    ]);
+
     res.status(201).json({ id: result.insertId, codigo });
 
   } catch (err) {
