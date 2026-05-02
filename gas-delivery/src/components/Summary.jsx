@@ -1,9 +1,23 @@
 import { useOrder } from '../context/OrderContext';
+import { useState, useEffect } from 'react';
 
 export default function Summary() {
   const { producto, cantidad, calcularTotal, hacerPedido, esFormularioValido } = useOrder();
+  const [tiendaAbierta, setTiendaAbierta] = useState(true);
+
   const totales = calcularTotal();
   const valido = esFormularioValido();
+
+  // Validar si estamos en horario de operación (7 AM a 7 PM, hora El Salvador)
+  useEffect(() => {
+    const svTime = new Date(new Date().toLocaleString("en-US", { timeZone: "America/El_Salvador" }));
+    const hora = svTime.getHours();
+    
+    // Si es antes de las 7:00 o después de las 18:59, cerramos la tienda
+    if (hora < 7 || hora >= 19) {
+      setTiendaAbierta(false);
+    }
+  }, []);
 
   return (
     <>
@@ -28,12 +42,19 @@ export default function Summary() {
         </div>
       </div>
 
+      {!tiendaAbierta && (
+        <div style={{ backgroundColor: '#fee2e2', color: '#991b1b', padding: '12px', borderRadius: '8px', textAlign: 'center', marginBottom: '15px', fontWeight: 'bold' }}>
+          Cerrado. Abrimos mañana a las 7:00 AM.
+        </div>
+      )}
+
       <button 
         className="btn-pedir" 
         onClick={hacerPedido}
-        disabled={!valido}
+        disabled={!valido || !tiendaAbierta}
+        style={{ opacity: (!valido || !tiendaAbierta) ? 0.6 : 1 }}
       >
-        {valido ? 'Confirmar pedido' : 'Completa tus datos'}
+        {!tiendaAbierta ? 'Tienda Cerrada' : (valido ? 'Confirmar pedido' : 'Completa tus datos')}
       </button>
       
       <p className="nota-pie">
