@@ -192,7 +192,7 @@ export default function AdminPanel() {
                 padding: "8px 14px",
                 borderRadius: "var(--radius-md)",
                 border: filtro === 'activos' ? "1px solid var(--primary)" : "1px solid var(--border-color)",
-                background: filtro === 'activos' ? "var(--primary-light)" : "var(--bg-card)",
+                background: filtro === 'activos' ? "var(--primary-light)" : "app)",
                 color: filtro === 'activos' ? "var(--primary)" : "var(--text-muted)",
                 fontWeight: filtro === 'activos' ? "600" : "500",
                 cursor: "pointer",
@@ -208,7 +208,7 @@ export default function AdminPanel() {
                 padding: "8px 14px",
                 borderRadius: "var(--radius-md)",
                 border: filtro === 'todos' ? "1px solid var(--primary)" : "1px solid var(--border-color)",
-                background: filtro === 'todos' ? "var(--primary-light)" : "var(--bg-card)",
+                background: filtro === 'todos' ? "var(--primary-light)" : "app",
                 color: filtro === 'todos' ? "var(--primary)" : "var(--text-muted)",
                 fontWeight: filtro === 'todos' ? "600" : "500",
                 cursor: "pointer",
@@ -223,9 +223,9 @@ export default function AdminPanel() {
           <button
             onClick={handleSimularPedido}
             disabled={isSimulating}
-            style={{
-              background: "var(--text-main)",
-              color: "var(--bg-card)",
+           style={{
+              background: "var(--primary)", /* Usamos el naranja de tu marca */
+              color: "#ffffff", /* Texto blanco forzado */
               border: "none",
               padding: "8px 12px",
               borderRadius: "var(--radius-md)",
@@ -237,7 +237,7 @@ export default function AdminPanel() {
               gap: "5px",
             }}
           >
-            {isSimulating ? "Generando..." : "✨ Simular"}
+            {isSimulating ? "Generando..." : "🚀 Simular"}
           </button>
         </div>
 
@@ -246,7 +246,7 @@ export default function AdminPanel() {
             Obteniendo pedidos recientes... 🔄
           </div>
         ) : pedidosFiltrados.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)", background: "var(--bg-card)", borderRadius: "var(--radius-md)", border: "1px dashed var(--border-color)" }}>
+          <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)", background: "var(--bg-app)", borderRadius: "var(--radius-md)", border: "1px dashed var(--border-color)" }}>
             {filtro === 'activos' ? 'No hay pedidos activos en este momento. ¡Todo al día! 🎉' : 'No hay pedidos en el historial.'}
           </div>
         ) : (
@@ -263,7 +263,7 @@ export default function AdminPanel() {
                     border: `1px solid ${estilo.border}`,
                     padding: "16px",
                     borderRadius: "var(--radius-md)",
-                    background: "var(--bg-card)",
+                    background: "var(--bg-app)",
                     boxShadow: "var(--shadow-sm)",
                     opacity: isFinalizado ? 0.8 : 1, 
                   }}

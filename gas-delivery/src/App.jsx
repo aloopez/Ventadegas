@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useParams, Navigate } from 'react-router-dom';
-import './App.css';
 import Header from './components/Header';
 import ProductSelector from './components/ProductSelector';
 import ZoneSelector from './components/ZoneSelector';

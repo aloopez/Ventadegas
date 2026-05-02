@@ -42,9 +42,9 @@ export default function AdminLogin({ onLogin }) {
           autoFocus
         />
         
-        {error && <div className="error-msg" style={{color: 'red', marginTop: '10px'}}>Contraseña incorrecta.</div>}
+        {error && <div className="error-msg">Contraseña incorrecta. Intenta de nuevo.</div>}
         
-        <button type="submit" disabled={loading} style={{marginTop: '15px', padding: '10px'}}>
+        <button type="submit" disabled={loading}>
           {loading ? 'Verificando...' : 'Entrar'}
         </button>
       </form>
