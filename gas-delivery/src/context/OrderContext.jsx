@@ -20,10 +20,23 @@ export function OrderProvider({ children, agencia }) {
 
   const cambiarCantidad = (delta) => setCantidad(prev => Math.max(1, Math.min(10, prev + delta)));
 
-  const calcularTotal = () => {
-    const sub = (producto?.precio || 0) * cantidad;
+ const calcularTotal = () => {
+    // 1. Extraemos el precio de forma segura (soportando p.precio o p.price)
+    const precioRaw = producto?.precio || producto?.price || 0;
+    
+    // 2. Forzamos a que sea un número (por si MySQL lo mandó como texto)
+    const precioNumber = parseFloat(precioRaw);
+    const precioValido = isNaN(precioNumber) ? 0 : precioNumber;
+
+    // 3. Calculamos asegurando que la cantidad también sea un número válido
+    const sub = precioValido * (Number(cantidad) || 1);
     const envio = sub >= 30 ? 0 : 3.00;
-    return { sub, envio, total: sub + envio };
+
+    return { 
+      sub: sub, 
+      envio: envio, 
+      total: sub + envio 
+    };
   };
 
   const hacerPedido = async () => {
@@ -78,14 +91,23 @@ export function OrderProvider({ children, agencia }) {
   };
 
   const esFormularioValido = () => {
-    const numerosTel = datosUsuario.tel.replace(/\D/g, '');
-    const duiValido = /^\d{8}-\d$/.test(datosUsuario.dui);
+    // 1. Asignamos strings vacíos por defecto para evitar que .replace() o .trim() 
+    // tiren un error fatal si el dato viene como 'undefined'
+    const telefono = datosUsuario.tel || '';
+    const dui = datosUsuario.dui || '';
+    const nombre = datosUsuario.nombre || '';
+    const direccion = datosUsuario.dir || '';
+
+    // 2. Validaciones limpias
+    const numerosTel = telefono.replace(/\D/g, '');
+    const duiValido = /^\d{8}-\d$/.test(dui);
 
     return (
       producto !== null && 
       numerosTel.length === 8 && 
-      datosUsuario.nombre.trim().length > 2 && 
-      datosUsuario.dir.trim().length > 5
+      duiValido &&
+      nombre.trim().length > 2 && 
+      direccion.trim().length > 5
     );
   };
 
