@@ -81,8 +81,29 @@ export function OrderProvider({ children, agencia }) {
       const data = await response.json();
 
       if (response.ok) {
-      
+        // 1. Mostramos la pantalla verde de éxito en el frontend
         setPedidoConfirmado(true);
+
+        // 2. MAGIA DE WHATSAPP
+        // Puedes cambiar este número por el de la distribuidora (recuerda poner el código de país sin el +)
+        const numeroDistribuidora = "50376099967"; 
+        const codigoPedido = data.codigo; // Tu backend devuelve { id: 1, codigo: 'ORD-XXXX' }
+
+        // Armamos un mensaje inteligente
+        let mensaje = `¡Hola! Acabo de realizar el pedido *${codigoPedido}*.\n\n`;
+        
+        if (datosUsuario.pago === 'Transferencia') {
+          mensaje += `Aquí envío el comprobante de mi transferencia.`;
+        } else {
+          mensaje += `Mi método de pago es: ${datosUsuario.pago}. Quedo atento a la entrega.`;
+        }
+
+        // Convertimos el texto a formato de URL (cambia los espacios por %20, etc.)
+        const urlWhatsApp = `https://wa.me/${numeroDistribuidora}?text=${encodeURIComponent(mensaje)}`;
+
+        // Abrimos WhatsApp en una pestaña nueva
+        window.open(urlWhatsApp, '_blank');
+
       } else {
         alert(`Error al procesar el pedido: ${data.error}`);
       }

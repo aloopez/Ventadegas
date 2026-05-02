@@ -283,9 +283,36 @@ export default function AdminPanel() {
                       <span><strong>{pedido.cliente_nombre}</strong> ({pedido.cliente_telefono})</span>
                     </div>
                     <div style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginTop: "4px" }}>
-                      <span>📍</span>
-                      <span>{pedido.direccion_entrega}</span>
-                    </div>
+  <span>📍</span>
+  <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-start" }}>
+    <span>{pedido.direccion_entrega}</span>
+    
+    {/* NUEVO: BOTÓN DE GPS CONDICIONAL */}
+    {pedido.latitud && pedido.longitud && (
+      <a 
+        href={`https://www.google.com/maps/search/?api=1&query=${pedido.latitud},${pedido.longitud}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "6px",
+          background: "#e8f0fe", /* Azul clarito */
+          color: "#2563eb", /* Texto azul fuerte */
+          padding: "6px 12px",
+          borderRadius: "var(--radius-sm)",
+          textDecoration: "none",
+          fontSize: "13px",
+          fontWeight: "700",
+          border: "1px solid #bfdbfe",
+          transition: "background 0.2s"
+        }}
+      >
+        🗺️ Abrir ruta en Mapa
+      </a>
+    )}
+  </div>
+</div>
                     
                     {/* Caja de detalles mejorada y alineada */}
                     <div style={{ marginTop: "12px", padding: "14px", background: "var(--bg-element)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", fontSize: "13.5px", display: "flex", flexDirection: "column", gap: "6px" }}>

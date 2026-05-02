@@ -80,7 +80,6 @@ export default function CheckoutForm() {
       <select name="pago" value={datosUsuario.pago} onChange={handleChange}>
         <option value="Efectivo">Efectivo al recibir</option>
         <option value="Transferencia">Transferencia bancaria</option>
-        <option value="Tarjeta">Tarjeta / Bitcoin / PayPal</option>
       </select>
 
       <label>Nota para el repartidor (opcional)</label>
