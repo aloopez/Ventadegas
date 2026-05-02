@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { pool } from './src/db.js';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
 
@@ -13,6 +14,29 @@ app.use(express.json());
 
 // --- HELPER: Generar código de pedido ---
 const generarCodigo = () => `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+
+// --- CONFIGURACIÓN JWT ---
+// En producción, pondrás esto en tu .env. Por ahora usamos un valor por defecto.
+const JWT_SECRET = process.env.JWT_SECRET || 'llave_super_secreta_ventadegas';
+
+// Esta función revisará si la petición trae un token válido
+const verificarToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  // El token suele venir como "Bearer eyJhbGci..."
+  const token = authHeader && authHeader.split(' ')[1]; 
+
+  if (!token) {
+    return res.status(403).json({ error: 'Acceso denegado. Se requiere un token.' });
+  }
+
+  try {
+    const decodificado = jwt.verify(token, JWT_SECRET);
+    req.admin = decodificado; // Guardamos los datos del admin en la petición
+    next(); // El token es válido, dejamos pasar la petición
+  } catch (error) {
+    return res.status(401).json({ error: 'Token inválido o expirado' });
+  }
+};
 
 // 1. OBTENER AGENCIA (Incluye sus zonas)
 app.get('/api/agencias/:slug', async (req, res) => {
@@ -127,7 +151,7 @@ app.post('/api/pedidos', async (req, res) => {
 });
 
 // 4. OBTENER PEDIDOS DE UNA AGENCIA (Para el Admin)
-app.get('/api/agencias/:slug/pedidos', async (req, res) => {
+app.get('/api/agencias/:slug/pedidos', verificarToken, async (req, res) => {
   const { slug } = req.params;
   try {
     // CORRECCIÓN PROACTIVA: Unimos la tabla clientes para recuperar el nombre y teléfono
@@ -147,7 +171,7 @@ app.get('/api/agencias/:slug/pedidos', async (req, res) => {
 });
 
 // 5. ACTUALIZAR ESTADO DE PEDIDO (Desde el Admin)
-app.patch('/api/pedidos/:id/estado', async (req, res) => {
+app.patch('/api/pedidos/:id/estado', verificarToken, async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
   try {
@@ -156,6 +180,22 @@ app.patch('/api/pedidos/:id/estado', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// --- ENDPOINT DE LOGIN ---
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  
+  // MVP: Validamos la contraseña (idealmente esto vendría de tu base de datos)
+  const PASSWORD_CORRECTA = process.env.ADMIN_PASSWORD || 'admin123';
+
+  if (password === PASSWORD_CORRECTA) {
+    // Generamos un token que expira en 8 horas
+    const token = jwt.sign({ rol: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
+    res.json({ token });
+  } else {
+    res.status(401).json({ error: 'Contraseña incorrecta' });
   }
 });
 

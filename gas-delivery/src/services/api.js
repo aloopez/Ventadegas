@@ -15,18 +15,38 @@ export const getProductosByAgencia = async (slug) => {
   return await response.json();
 };
 
-// 3. Obtener pedidos para el Panel Admin
+// --- NUEVO: FUNCIÓN PARA LOGIN ---
+export const loginAdmin = async (password) => {
+  const response = await fetch(`${API_BASE_URL}/admin/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password })
+  });
+  if (!response.ok) throw new Error('Contraseña incorrecta');
+  return await response.json();
+};
+
+// 3. Obtener pedidos para el Panel Admin (ACTUALIZADO CON JWT)
 export const getPedidosByAgencia = async (slug) => {
-  const response = await fetch(`${API_BASE_URL}/agencias/${slug}/pedidos`);
+  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital en el navegador
+  const response = await fetch(`${API_BASE_URL}/agencias/${slug}/pedidos`, {
+    headers: {
+      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
+    }
+  });
   if (!response.ok) throw new Error('Error al obtener pedidos');
   return await response.json();
 };
 
-// 4. Actualizar estado de un pedido
+// 4. Actualizar estado de un pedido (ACTUALIZADO CON JWT)
 export const updateEstadoPedido = async (id, nuevoEstado) => {
+  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital en el navegador
   const response = await fetch(`${API_BASE_URL}/pedidos/${id}/estado`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
+    },
     body: JSON.stringify({ estado: nuevoEstado }),
   });
   return await response.json();
@@ -42,10 +62,8 @@ export const crearPedido = async (datosPedido) => {
   return await response.json();
 };
 
-// 6. FUNCIÓN QUE FALTABA: Simular pedido enviándolo al backend real
+// 6. Simular pedido enviándolo al backend real
 export const simularNuevoPedido = async (agenciaSlug) => {
-  // Primero necesitamos el ID de la agencia (puedes ajustarlo si el ID es distinto)
-  // Para este ejemplo asumimos que trabajamos con la agencia ID: 1
   const datosSimulados = {
     agencia_id: 1, 
     cliente_nombre: "Cliente Simulado",
@@ -54,6 +72,5 @@ export const simularNuevoPedido = async (agenciaSlug) => {
     total: 15.50,
     detalles: "1x Cilindro 25lbs (Simulado)"
   };
-
   return await crearPedido(datosSimulados);
 };
