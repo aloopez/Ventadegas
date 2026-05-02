@@ -2,18 +2,18 @@
 
 Plataforma web **multitenant** (modelo tipo **suscripción**) para que distintos negocios puedan **gestionar sus ventas**, **administrar pedidos** y **analizar datos** desde una sola aplicación.
 
-Este repositorio incluye:
-
-- **Frontend**: Vite + React (puerto **5173**)
-- **Backend**: Node.js + Express (puerto **3000**)
-- **Base de datos**: MySQL
+> 📄 Este README se genera automáticamente en cada push.  
+> Última actualización: `2026-05-02 07:47:21 UTC`
 
 ---
 
 ## Estructura del proyecto
 
-- **Frontend:** `gas-delivery/`
-- **Backend:** `gas-delivery-backend/`
+```
+Ventadegas/
+├── gas-delivery/           # Frontend – Vite + React (puerto 5173)
+└── gas-delivery-backend/   # Backend  – Node.js + Express (puerto 3000)
+```
 
 ---
 
@@ -75,42 +75,32 @@ Asegúrate de:
 node index.js
 ```
 
-Backend en:
-- `http://localhost:3000`
+Backend en: `http://localhost:3000`
+
+### Dependencias de producción
+
+- `cors` ^2.8.6
+- `dotenv` ^17.4.2
+- `express` ^5.2.1
+- `mysql2` ^3.22.3
+
+### Dependencias de desarrollo
+
+- `nodemon` ^3.1.14
 
 ---
 
 ## Endpoints del Backend (API)
 
-Definidos en: `gas-delivery-backend/index.js`
+Detectados automáticamente en `gas-delivery-backend/index.js`:
 
-### Agencias
-- `GET /api/agencias/:slug`  
-  Obtiene la agencia por `slug` e incluye sus **zonas**.
-
-- `GET /api/agencias/:slug/productos`  
-  Obtiene los productos de una agencia por `slug`.
-
-### Pedidos
-- `POST /api/pedidos`  
-  Crea un pedido (desde la tienda). Genera un `codigo_pedido` tipo `ORD-####`.
-
-  Body esperado:
-  - `agencia_id`
-  - `cliente_nombre`
-  - `cliente_telefono`
-  - `direccion_entrega`
-  - `total`
-  - `detalles`
-
-- `GET /api/agencias/:slug/pedidos`  
-  Lista pedidos de la agencia (para admin), ordenados por `fecha_creacion` desc.
-
-- `PATCH /api/pedidos/:id/estado`  
-  Actualiza el estado de un pedido.
-
-  Body:
-  - `estado`
+| Método | Ruta |
+|--------|------|
+| `GET` | `/api/agencias/:slug` |
+| `GET` | `/api/agencias/:slug/productos` |
+| `POST` | `/api/pedidos` |
+| `GET` | `/api/agencias/:slug/pedidos` |
+| `PATCH` | `/api/pedidos/:id/estado` |
 
 ---
 
@@ -131,8 +121,25 @@ npm install
 npm run dev
 ```
 
-Frontend en:
-- `http://localhost:5173`
+Frontend en: `http://localhost:5173`
+
+### Dependencias de producción
+
+- `react` ^19.2.5
+- `react-dom` ^19.2.5
+- `react-router-dom` ^7.14.2
+
+### Dependencias de desarrollo
+
+- `@eslint/js` ^10.0.1
+- `@types/react` ^19.2.14
+- `@types/react-dom` ^19.2.3
+- `@vitejs/plugin-react` ^6.0.1
+- `eslint` ^10.2.1
+- `eslint-plugin-react-hooks` ^7.1.1
+- `eslint-plugin-react-refresh` ^0.5.2
+- `globals` ^17.5.0
+- `vite` ^8.0.10
 
 ---
 
@@ -150,7 +157,7 @@ El backend habilita CORS usando `cors()` para permitir requests desde el fronten
 ## Multitenancy
 
 El producto es **multitenant** (suscripción para negocios).  
-Los negocios/tenants se identifican por un `slug` (por ejemplo en la API):
+Los negocios/tenants se identifican por un `slug`:
 
 - `/api/agencias/:slug`
 - `/api/agencias/:slug/productos`
