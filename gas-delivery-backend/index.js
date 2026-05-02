@@ -127,6 +127,14 @@ app.post('/api/pedidos', async (req, res) => {
     if (clienteExistente.length > 0) {
       // El cliente ya existe, tomamos su ID
       cliente_id = clienteExistente[0].id;
+      
+      // --- NUEVO: Actualizamos sus datos por si cambió de nombre o teléfono ---
+      await pool.query(
+        'UPDATE clientes SET nombre = ?, telefono = ? WHERE id = ?',
+        [cliente_nombre, cliente_telefono, cliente_id]
+      );
+      // ----------------------------------------------------------------------
+      
     } else {
       // El cliente es nuevo, lo insertamos en la BD
       const [nuevoCliente] = await pool.query(

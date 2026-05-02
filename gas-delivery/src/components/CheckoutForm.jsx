@@ -82,8 +82,22 @@ export default function CheckoutForm() {
         <option value="Transferencia">Transferencia bancaria</option>
       </select>
 
-      <label>Nota para el repartidor (opcional)</label>
-      <textarea name="nota" value={datosUsuario.nota} onChange={handleChange} placeholder="Instrucciones especiales..." maxLength={150}></textarea>
+    
+      {/* Etiqueta con contador de caracteres */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 8px' }}>
+        <label style={{ margin: 0 }}>Nota para el repartidor (opcional)</label>
+        <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600' }}>
+          {datosUsuario.nota?.length || 0}/150
+        </span>
+      </div>
+      
+      <textarea 
+        name="nota" 
+        value={datosUsuario.nota} 
+        onChange={handleChange} 
+        placeholder="Instrucciones especiales..." 
+        maxLength={150}
+      ></textarea>
     </div>
   );
 }
