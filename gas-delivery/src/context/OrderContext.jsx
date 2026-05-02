@@ -8,7 +8,7 @@ export function OrderProvider({ children, agencia }) {
   const [zona, setZona] = useState(agencia?.zonas?.[0] || 'Local'); 
   const [hora, setHora] = useState('Lo antes posible');
   const [datosUsuario, setDatosUsuario] = useState({ 
-    dui: '', nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '', latitud: null, longitud: null 
+    dui: '', nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '', latitud: null, longitud: null, billete: ''
   });
   const [pedidoConfirmado, setPedidoConfirmado] = useState(false);
 
@@ -47,12 +47,13 @@ export function OrderProvider({ children, agencia }) {
 
     const totales = calcularTotal();
 
+    // Armamos el texto detallado para la base de datos y el panel
     const textoDetalles = `
       Producto: ${cantidad}x Cilindro ${producto.peso} 
       Zona: ${zona}
       Hora de entrega: ${hora}
       Referencia: ${datosUsuario.ref || 'N/A'}
-      Forma de pago: ${datosUsuario.pago}
+      Forma de pago: ${datosUsuario.pago} ${datosUsuario.pago === 'Efectivo' && datosUsuario.billete ? `(Cambio de $${datosUsuario.billete})` : ''}
       Nota: ${datosUsuario.nota || 'Ninguna'}
     `.trim();
 
