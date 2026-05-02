@@ -3,7 +3,7 @@
 Plataforma web **multitenant** (modelo tipo **suscripción**) para que distintos negocios puedan **gestionar sus ventas**, **administrar pedidos** y **analizar datos** desde una sola aplicación.
 
 > 📄 Este README se genera automáticamente en cada push.  
-> Última actualización: `2026-05-02 07:47:21 UTC`
+> Última actualización: `2026-05-02 07:48:18 UTC`
 
 ---
 
@@ -82,6 +82,7 @@ Backend en: `http://localhost:3000`
 - `cors` ^2.8.6
 - `dotenv` ^17.4.2
 - `express` ^5.2.1
+- `jsonwebtoken` ^9.0.3
 - `mysql2` ^3.22.3
 
 ### Dependencias de desarrollo
@@ -101,6 +102,7 @@ Detectados automáticamente en `gas-delivery-backend/index.js`:
 | `POST` | `/api/pedidos` |
 | `GET` | `/api/agencias/:slug/pedidos` |
 | `PATCH` | `/api/pedidos/:id/estado` |
+| `POST` | `/api/admin/login` |
 
 ---
 
@@ -134,11 +136,13 @@ Frontend en: `http://localhost:5173`
 - `@eslint/js` ^10.0.1
 - `@types/react` ^19.2.14
 - `@types/react-dom` ^19.2.3
+- `@vitejs/plugin-legacy` ^8.0.1
 - `@vitejs/plugin-react` ^6.0.1
 - `eslint` ^10.2.1
 - `eslint-plugin-react-hooks` ^7.1.1
 - `eslint-plugin-react-refresh` ^0.5.2
 - `globals` ^17.5.0
+- `terser` ^5.46.2
 - `vite` ^8.0.10
 
 ---
