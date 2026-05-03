@@ -650,3 +650,98 @@ textarea {
 .login-form button:hover:not(:disabled) {
   background-color: var(--primary-hover);
 }
+
+/* =========================================
+   DISEÑO PREMIUM PARA CAMBIO EN EFECTIVO
+   ========================================= */
+
+.cash-change-container {
+  background-color: var(--bg-secondary, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 12px;
+  margin-bottom: 20px;
+  /* Esta animación hace que aparezca deslizándose hacia abajo suavemente */
+  animation: slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cash-change-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cash-change-header label {
+  margin: 0 !important; /* Para evitar que el diseño global lo empuje */
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Etiqueta tipo "Badge" de Uber Eats */
+.optional-badge {
+  font-size: 11px;
+  background-color: var(--border-color, #e2e8f0);
+  color: var(--text-muted, #64748b);
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cash-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* El símbolo de dólar flotante */
+.currency-symbol {
+  position: absolute;
+  left: 14px;
+  color: #10b981; /* Verde esmeralda para dar sensación de dinero */
+  font-weight: 800;
+  font-size: 18px;
+  pointer-events: none; /* Para que al darle clic no estorbe al input */
+}
+
+/* El campo de texto de alta gama */
+.cash-input {
+  width: 100%;
+  padding: 12px 14px 12px 36px !important; /* Espacio extra a la izquierda para el $ */
+  border: 2px solid var(--border-color, #cbd5e1);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  background-color: var(--bg-primary, #ffffff);
+}
+
+/* Efecto al tocar la caja (Focus) */
+.cash-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  outline: none;
+}
+
+.cash-help-text {
+  font-size: 12px;
+  color: var(--text-muted, #64748b);
+  margin-top: 10px;
+  margin-bottom: 0;
+  font-weight: 500;
+}
+
+/* Keyframe para la animación de entrada */
+@keyframes slideDownFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

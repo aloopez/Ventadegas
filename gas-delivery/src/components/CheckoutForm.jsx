@@ -82,15 +82,16 @@ export default function CheckoutForm() {
         <option value="Transferencia">Transferencia bancaria</option>
       </select>
 
-      {/* --- NUEVO: PREGUNTA DE CAMBIO CONDICIONAL --- */}
+      {/* --- NUEVO: PREGUNTA DE CAMBIO CONDICIONAL MEJORADA --- */}
       {datosUsuario.pago === 'Efectivo' && (
-        <div style={{ marginTop: '12px', marginBottom: '16px', animation: 'fadeIn 0.3s ease-in-out' }}>
-          <label style={{ display: 'flex', justifyContent: 'space-between' }}>
-            ¿Con qué billete vas a pagar? 
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>(Opcional)</span>
-          </label>
-          <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 'bold' }}>$</span>
+        <div className="cash-change-container">
+          <div className="cash-change-header">
+            <label>¿Con qué billete pagarás?</label>
+            <span className="optional-badge">Opcional</span>
+          </div>
+          
+          <div className="cash-input-wrapper">
+            <span className="currency-symbol">$</span>
             <input 
               type="number" 
               name="billete" 
@@ -98,16 +99,15 @@ export default function CheckoutForm() {
               onChange={handleChange} 
               placeholder="Ej: 20" 
               min="0"
-              style={{ paddingLeft: '28px' }} // Espacio para el signo de dólar
+              className="cash-input"
             />
           </div>
-          <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '6px' }}>
-            Para que el repartidor lleve el cambio exacto.
+          <p className="cash-help-text">
+            💡 Ayúdanos a llevar tu cambio exacto.
           </p>
         </div>
       )}
       {/* ------------------------------------------- */}
-
     
       {/* Etiqueta con contador de caracteres */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '20px 0 8px' }}>
