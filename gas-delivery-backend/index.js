@@ -38,7 +38,6 @@ const verificarToken = (req, res, next) => {
   }
 };
 
-// 1. OBTENER AGENCIA (Incluye sus zonas)
 app.get('/api/agencias/:slug', async (req, res) => {
   const { slug } = req.params;
   try {
@@ -62,9 +61,16 @@ app.get('/api/agencias/:slug', async (req, res) => {
       nombre: a.nombre,
       slug: a.slug,
       telefono: a.telefono,
-      zonas: zonasArr, // <--- Esto arregla el error de "undefined (reading '0')"
+      zonas: zonasArr,
+      // --- MAGIA MULTI-AGENCIA: Nuevos campos expuestos ---
+      color_primario: a.color_primario,
+      hora_apertura: a.hora_apertura,
+      hora_cierre: a.hora_cierre,
+      costo_envio: a.costo_envio,
+      envio_gratis_desde: a.envio_gratis_desde,
+      // ----------------------------------------------------
       tema: {
-        primary: a.color_primario || '#2563eb'
+        primary: a.color_primario || '#2563eb' // Lo dejamos por si tienes código viejo usándolo
       }
     });
   } catch (err) {
