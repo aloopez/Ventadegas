@@ -3,21 +3,42 @@ import { useState, useEffect } from 'react';
 
 export default function Summary() {
   // 1. Agregamos datosUsuario a lo que extraemos del contexto
-  const { producto, cantidad, calcularTotal, hacerPedido, esFormularioValido, datosUsuario } = useOrder();
+  const {agencia, producto, cantidad, calcularTotal, hacerPedido, esFormularioValido, datosUsuario } = useOrder();
   const [tiendaAbierta, setTiendaAbierta] = useState(true);
 
   const totales = calcularTotal();
   const valido = esFormularioValido();
 
   useEffect(() => {
+    if (!agencia) return;
+
+    // Hora actual en El Salvador
     const svTime = new Date(new Date().toLocaleString("en-US", { timeZone: "America/El_Salvador" }));
-    const hora = svTime.getHours();
+    const currentHour = svTime.getHours();
+    const currentMinute = svTime.getMinutes();
+    const tiempoActual = currentHour + (currentMinute / 60); // Ejemplo: 7:30 PM = 19.5
+
+    // Extraemos los horarios de la agencia (por defecto 7am a 7pm si no existen)
+    let horaApertura = 7;
+    let horaCierre = 19;
+
+    if (agencia.hora_apertura) {
+      const [h, m] = agencia.hora_apertura.split(':');
+      horaApertura = parseInt(h, 10) + (parseInt(m, 10) / 60);
+    }
     
-    // COMENTADO PARA TESTING
-    // if (hora < 7 || hora >= 19) {
-    //   setTiendaAbierta(false);
-    // }
-  }, []);
+    if (agencia.hora_cierre) {
+      const [h, m] = agencia.hora_cierre.split(':');
+      horaCierre = parseInt(h, 10) + (parseInt(m, 10) / 60);
+    }
+
+    // Comparamos el tiempo actual con las reglas de la base de datos
+    if (tiempoActual < horaApertura || tiempoActual >= horaCierre) {
+      setTiendaAbierta(false);
+    } else {
+      setTiendaAbierta(true);
+    }
+  }, [agencia]);
 
   return (
     <>
@@ -72,7 +93,7 @@ export default function Summary() {
 
       {!tiendaAbierta && (
         <div style={{ backgroundColor: 'var(--error-bg)', color: 'var(--error)', padding: '14px', borderRadius: 'var(--radius-sm)', textAlign: 'center', marginBottom: '20px', fontWeight: '600', border: '1px solid var(--error-border)' }}>
-          Cerrado. Abrimos mañana a las 7:00 AM.
+          Cerrado. Abrimos a las {agencia?.hora_apertura?.slice(0, 5) || '07:00'}.
         </div>
       )}
 

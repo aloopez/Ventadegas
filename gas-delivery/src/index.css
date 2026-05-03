@@ -36,26 +36,22 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 24px;
-} /* <-- AQUÍ CERRAMOS EL MODO CLARO */
+} 
 
 /* MODO OSCURO (Automático) */
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Mantener el naranja pero un poco más brillante para que resalte */
     --primary: #f97316;
     --primary-hover: #ea580c;
     --primary-light: #431407; 
     
-    /* Fondos oscuros puros */
     --bg-body: #111827; 
     --bg-app: #1f2937; 
     --bg-element: #374151; 
     
-    /* Textos claros */
     --text-main: #f9fafb; 
     --text-muted: #9ca3af; 
     
-    /* Estados adaptados a la oscuridad */
     --border: #374151;
     
     --success: #4ade80;
@@ -66,7 +62,6 @@
     --error-bg: #450a0a;
     --error-border: #7f1d1d;
     
-    /* Sombras más intensas porque en fondos oscuros se pierden */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
     --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.8), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
@@ -89,7 +84,6 @@ body {
   line-height: 1.5;
 }
 
-/* Eliminar estilos por defecto de botones y enlaces */
 button {
   font-family: inherit;
   border: none;
@@ -97,12 +91,12 @@ button {
   cursor: pointer;
 }
 
-/* --- 3. LAYOUT PRINCIPAL (El "Celular" en pantalla) --- */
+/* --- 3. LAYOUT PRINCIPAL --- */
 .page {
   background-color: var(--bg-app);
   min-height: 100vh;
   width: 100%;
-  max-width: 480px; /* Ancho máximo de un celular grande */
+  max-width: 480px; 
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -215,7 +209,7 @@ button {
   100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
 }
 
-/* --- 5. COMPONENTES DE TIENDA (Tarjetas y Botones) --- */
+/* --- 5. COMPONENTES DE TIENDA (LIFTING APLICADO) --- */
 .prod-list {
   display: flex;
   flex-direction: column;
@@ -227,20 +221,28 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   cursor: pointer;
   background: var(--bg-app);
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .prod-row:hover {
-  border-color: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.prod-row:active {
+  transform: scale(0.98);
 }
 
 .prod-row.sel {
-  border-color: var(--primary);
-  background: var(--primary-light);
+  border: 2px solid var(--primary) !important;
+  background: var(--primary-light) !important;
+  box-shadow: 0 4px 14px -4px rgba(234, 88, 12, 0.15);
 }
 
 .prod-left {
@@ -257,11 +259,14 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  color: var(--text-muted); /* <-- Color gris por defecto para el SVG */
+  transition: all 0.2s ease; /* <-- Transición suave de color */
 }
 
 .prod-row.sel .prod-icon {
   background: white;
+  color: var(--primary); /* <-- El ícono se vuelve naranja al seleccionarlo */
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.15); /* Le da un efecto 3D */
 }
 
 .prod-name {
@@ -304,7 +309,8 @@ button {
 .qty-control {
   display: flex;
   align-items: center;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   border-radius: var(--radius-sm);
   background: var(--bg-app);
 }
@@ -329,8 +335,8 @@ button {
   text-align: center;
   font-size: 16px;
   font-weight: 700;
-  border-left: 2px solid var(--border);
-  border-right: 2px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   line-height: 40px;
 }
 
@@ -343,24 +349,33 @@ button {
 
 .zona-btn, .hora-btn {
   padding: 14px;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   border-radius: var(--radius-sm);
   background: var(--bg-app);
   font-size: 14px;
   font-weight: 600;
   color: var(--text-main);
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: center;
 }
 
 .zona-btn:hover, .hora-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
   background: var(--bg-element);
 }
 
+.zona-btn:active, .hora-btn:active {
+  transform: scale(0.98);
+}
+
 .zona-btn.sel, .hora-btn.sel {
-  border-color: var(--primary);
-  background: var(--primary-light);
+  border: 2px solid var(--primary) !important;
+  background: var(--primary-light) !important;
   color: var(--primary);
+  box-shadow: 0 4px 14px -4px rgba(234, 88, 12, 0.15);
 }
 
 .hora-row {
@@ -374,7 +389,7 @@ button {
   font-size: 13px;
 }
 
-/* --- 6. FORMULARIOS --- */
+/* --- 6. FORMULARIOS (LIFTING APLICADO) --- */
 label {
   display: block;
   font-size: 14px;
@@ -386,19 +401,22 @@ label {
 input[type="text"], input[type="tel"], select, textarea {
   width: 100%;
   padding: 14px 16px;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border) !important;
   border-radius: var(--radius-sm);
-  background: var(--bg-app);
+  background-color: var(--bg-element) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
   color: var(--text-main);
   font-size: 15px;
   font-family: inherit;
-  transition: border-color 0.2s;
+  transition: all 0.2s ease;
   outline: none;
   -webkit-appearance: none;
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: var(--primary);
+  background-color: var(--bg-app) !important;
+  border: 2px solid var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1) !important;
 }
 
 select {
@@ -425,6 +443,7 @@ textarea {
 .input-error {
   border-color: var(--error) !important;
   background: var(--error-bg) !important;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1) !important;
 }
 
 .error-text {
@@ -482,12 +501,17 @@ textarea {
   font-size: 16px;
   font-weight: 700;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.2);
+  box-shadow: 0 4px 12px -2px rgba(234, 88, 12, 0.3);
 }
 
 .btn-pedir:hover:not(:disabled) {
   background: var(--primary-hover);
   transform: translateY(-1px);
+  box-shadow: 0 6px 16px -2px rgba(234, 88, 12, 0.4);
+}
+
+.btn-pedir:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .btn-pedir:disabled {
@@ -509,7 +533,8 @@ textarea {
 .btn-gps {
   width: 100%;
   padding: 14px;
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   border-radius: var(--radius-sm);
   background: var(--bg-app);
   color: var(--text-main);
@@ -519,12 +544,17 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: background 0.2s;
+  transition: all 0.2s;
   margin-top: 12px;
 }
 
 .btn-gps:hover:not(:disabled) {
   background: var(--bg-element);
+  border-color: #cbd5e1;
+}
+
+.btn-gps:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .gps-alert {
@@ -586,16 +616,24 @@ textarea {
 
 .reset-btn {
   background: var(--bg-element);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
   font-size: 15px;
   color: var(--text-main);
   font-weight: 700;
   padding: 14px 28px;
   border-radius: var(--radius-sm);
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
-.reset-btn:hover { background: #e5e7eb; }
+.reset-btn:hover { 
+  background: #e5e7eb; 
+  transform: translateY(-1px);
+}
+
+.reset-btn:active {
+  transform: scale(0.98);
+}
 
 /* --- 10. LOGIN Y PANEL ADMINISTRADOR --- */
 .login-container {
@@ -637,18 +675,24 @@ textarea {
 }
 
 .login-form button {
-  background-color: var(--primary); /* Cambiado para que siempre sea naranja */
-  color: #ffffff; /* Texto siempre blanco */
+  background-color: var(--primary);
+  color: #ffffff; 
   padding: 16px;
   border-radius: var(--radius-sm);
   font-size: 1.1rem;
   font-weight: 700;
   margin-top: 8px;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px -2px rgba(234, 88, 12, 0.3);
 }
 
 .login-form button:hover:not(:disabled) {
   background-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.login-form button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 /* =========================================
@@ -656,13 +700,14 @@ textarea {
    ========================================= */
 
 .cash-change-container {
-  background-color: var(--bg-secondary, #f8fafc);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 12px;
-  padding: 16px;
-  margin-top: 12px;
-  margin-bottom: 20px;
-  /* Esta animación hace que aparezca deslizándose hacia abajo suavemente */
+  /* Fondo neutral y limpio, sin exceso de naranja */
+  background-color: var(--bg-app);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-top: 14px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-sm);
   animation: slideDownFade 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -670,21 +715,21 @@ textarea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .cash-change-header label {
-  margin: 0 !important; /* Para evitar que el diseño global lo empuje */
-  font-weight: 600;
+  margin: 0 !important;
+  font-weight: 700;
   font-size: 14px;
+  color: var(--text-main); /* Texto oscuro normal */
 }
 
-/* Etiqueta tipo "Badge" de Uber Eats */
 .optional-badge {
   font-size: 11px;
-  background-color: var(--border-color, #e2e8f0);
-  color: var(--text-muted, #64748b);
-  padding: 4px 8px;
+  background-color: var(--bg-element); /* Fondo gris claro */
+  color: var(--text-muted); /* Texto gris */
+  padding: 4px 10px;
   border-radius: 20px;
   font-weight: 700;
   text-transform: uppercase;
@@ -697,44 +742,53 @@ textarea {
   align-items: center;
 }
 
-/* El símbolo de dólar flotante */
 .currency-symbol {
   position: absolute;
-  left: 14px;
-  color: #10b981; /* Verde esmeralda para dar sensación de dinero */
-  font-weight: 800;
+  left: 16px;
+  color: var(--text-muted); /* Símbolo de dólar en gris */
+  font-weight: 700;
   font-size: 18px;
-  pointer-events: none; /* Para que al darle clic no estorbe al input */
+  pointer-events: none; 
 }
 
-/* El campo de texto de alta gama */
+/* El campo de texto neutral */
 .cash-input {
   width: 100%;
-  padding: 12px 14px 12px 36px !important; /* Espacio extra a la izquierda para el $ */
-  border: 2px solid var(--border-color, #cbd5e1);
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 14px 14px 14px 40px !important; 
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-sm);
+  font-size: 18px; 
+  font-weight: 700;
+  color: var(--text-main);
   transition: all 0.2s ease;
-  background-color: var(--bg-primary, #ffffff);
+  background-color: var(--bg-element) !important; 
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+  -moz-appearance: textfield; /* Oculta las flechas en Firefox */
 }
 
-/* Efecto al tocar la caja (Focus) */
+/* Ocultar las flechas en Chrome, Safari y Edge */
+.cash-input::-webkit-outer-spin-button,
+.cash-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Aquí es el único lugar donde brilla el naranja: al tocarlo */
 .cash-input:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  background-color: var(--bg-app) !important;
+  border: 2px solid var(--primary) !important;
+  box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.15) !important;
   outline: none;
 }
 
 .cash-help-text {
-  font-size: 12px;
-  color: var(--text-muted, #64748b);
-  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-muted); /* Texto de ayuda neutral */
+  margin-top: 12px;
   margin-bottom: 0;
   font-weight: 500;
 }
 
-/* Keyframe para la animación de entrada */
 @keyframes slideDownFade {
   0% {
     opacity: 0;

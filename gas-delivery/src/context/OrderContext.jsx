@@ -7,9 +7,25 @@ export function OrderProvider({ children, agencia }) {
   const [cantidad, setCantidad] = useState(1);
   const [zona, setZona] = useState(agencia?.zonas?.[0] || 'Local'); 
   const [hora, setHora] = useState('Lo antes posible');
-  const [datosUsuario, setDatosUsuario] = useState({ 
-    dui: '', nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '', latitud: null, longitud: null, billete: ''
+  
+  // MAGIA ONE-CLICK: Memoria del cliente
+  const [datosUsuario, setDatosUsuario] = useState(() => {
+    const datosGuardados = localStorage.getItem('ventadegas_cliente');
+    const valoresPorDefecto = { 
+      dui: '', nombre: '', tel: '', dir: '', ref: '', pago: 'Efectivo', nota: '', latitud: null, longitud: null, billete: '' 
+    };
+    
+    if (datosGuardados) {
+      try {
+        const clienteRecordado = JSON.parse(datosGuardados);
+        return { ...valoresPorDefecto, ...clienteRecordado, pago: 'Efectivo', nota: '', billete: '' };
+      } catch (error) {
+        return valoresPorDefecto;
+      }
+    }
+    return valoresPorDefecto;
   });
+
   const [pedidoConfirmado, setPedidoConfirmado] = useState(false);
 
   useEffect(() => {
@@ -20,17 +36,16 @@ export function OrderProvider({ children, agencia }) {
 
   const cambiarCantidad = (delta) => setCantidad(prev => Math.max(1, Math.min(10, prev + delta)));
 
- const calcularTotal = () => {
-    // 1. Extraemos el precio de forma segura (soportando p.precio o p.price)
+  // MAGIA MULTI-AGENCIA: Precios dinámicos
+  const calcularTotal = () => {
     const precioRaw = producto?.precio || producto?.price || 0;
-    
-    // 2. Forzamos a que sea un número (por si MySQL lo mandó como texto)
-    const precioNumber = parseFloat(precioRaw);
-    const precioValido = isNaN(precioNumber) ? 0 : precioNumber;
-
-    // 3. Calculamos asegurando que la cantidad también sea un número válido
+    const precioValido = isNaN(parseFloat(precioRaw)) ? 0 : parseFloat(precioRaw);
     const sub = precioValido * (Number(cantidad) || 1);
-    const envio = sub >= 30 ? 0 : 3.00;
+
+    const costoEnvioFijo = parseFloat(agencia?.costo_envio) || 3.00;
+    const umbralEnvioGratis = parseFloat(agencia?.envio_gratis_desde) || 30.00;
+    
+    const envio = sub >= umbralEnvioGratis ? 0 : costoEnvioFijo;
 
     return { 
       sub: sub, 
@@ -46,8 +61,7 @@ export function OrderProvider({ children, agencia }) {
     }
 
     const totales = calcularTotal();
-
-    // Armamos el texto detallado para la base de datos y el panel
+    
     const textoDetalles = `
       Producto: ${cantidad}x Cilindro ${producto.peso} 
       Zona: ${zona}
@@ -78,19 +92,24 @@ export function OrderProvider({ children, agencia }) {
         },
         body: JSON.stringify(payload)
       });
-
+      
       const data = await response.json();
 
       if (response.ok) {
-        // 1. Mostramos la pantalla verde de éxito en el frontend
         setPedidoConfirmado(true);
 
-        // 2. MAGIA DE WHATSAPP
-        // Puedes cambiar este número por el de la distribuidora (recuerda poner el código de país sin el +)
-        const numeroDistribuidora = "50376099967"; 
-        const codigoPedido = data.codigo; // Tu backend devuelve { id: 1, codigo: 'ORD-XXXX' }
+        // Guardamos los datos para la próxima compra
+        localStorage.setItem('ventadegas_cliente', JSON.stringify({
+          dui: datosUsuario.dui,
+          nombre: datosUsuario.nombre,
+          tel: datosUsuario.tel,
+          dir: datosUsuario.dir,
+          ref: datosUsuario.ref
+        }));
 
-        // Armamos un mensaje inteligente
+        const numeroDistribuidora = "50376099967"; 
+        const codigoPedido = data.codigo; 
+
         let mensaje = `¡Hola! Acabo de realizar el pedido *${codigoPedido}*.\n\n`;
         
         if (datosUsuario.pago === 'Transferencia') {
@@ -99,14 +118,8 @@ export function OrderProvider({ children, agencia }) {
           mensaje += `Mi método de pago es: ${datosUsuario.pago}. Quedo atento a la entrega.`;
         }
 
-        // Convertimos el texto a formato de URL (cambia los espacios por %20, etc.)
         const urlWhatsApp = `https://wa.me/${numeroDistribuidora}?text=${encodeURIComponent(mensaje)}`;
-
-        // MAGIA MÓVIL: En lugar de intentar abrir una pestaña nueva (que los celulares bloquean), 
-        // redirigimos la página actual. El celular detectará que es un enlace de WhatsApp 
-        // y automáticamente "saltará" a abrir la aplicación nativa.
         window.location.href = urlWhatsApp;
-
       } else {
         alert(`Error al procesar el pedido: ${data.error}`);
       }
@@ -117,14 +130,11 @@ export function OrderProvider({ children, agencia }) {
   };
 
   const esFormularioValido = () => {
-    // 1. Asignamos strings vacíos por defecto para evitar que .replace() o .trim() 
-    // tiren un error fatal si el dato viene como 'undefined'
     const telefono = datosUsuario.tel || '';
     const dui = datosUsuario.dui || '';
     const nombre = datosUsuario.nombre || '';
     const direccion = datosUsuario.dir || '';
 
-    // 2. Validaciones limpias
     const numerosTel = telefono.replace(/\D/g, '');
     const duiValido = /^\d{8}-\d$/.test(dui);
 
