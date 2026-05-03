@@ -3,7 +3,7 @@
 Plataforma web **multitenant** (modelo tipo **suscripción**) para que distintos negocios puedan **gestionar sus ventas**, **administrar pedidos** y **analizar datos** desde una sola aplicación.
 
 > 📄 Este README se genera automáticamente en cada push.  
-> Última actualización: `2026-05-03 03:41:06 UTC`
+> Última actualización: `2026-05-03 19:51:58 UTC`
 
 ---
 
@@ -144,6 +144,7 @@ Frontend en: `http://localhost:5173`
 - `globals` ^17.5.0
 - `terser` ^5.46.2
 - `vite` ^8.0.10
+- `vite-plugin-pwa` ^1.2.0
 
 ---
 
