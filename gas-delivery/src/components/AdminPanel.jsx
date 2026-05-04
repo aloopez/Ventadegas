@@ -5,10 +5,9 @@ import {
   getPedidosByAgencia,
   updateEstadoPedido,
   simularNuevoPedido,
-  // NUEVAS FUNCIONES IMPORTADAS:
-  getProductosByAgenciaId,
   togglePausarTienda,
-  updatePrecioProducto
+  updatePrecioProducto,
+  getProductosByAgencia // <-- ¡Te faltaba importar esta!
 } from "../services/api";
 import AdminLogin from "./AdminLogin";
 
@@ -37,18 +36,24 @@ export default function AdminPanel() {
     });
   };
 
+  // 1. Cargar los datos públicos de la agencia
   useEffect(() => {
-    getAgenciaBySlug(agenciaSlug).then((data) => {
-      setAgencia(data);
-      // NUEVO: Si estamos logueados, cargamos los productos de esta agencia
-      if (isAuthenticated) {
-        getProductosByAgenciaId(data.id).then(setProductos).catch(console.error);
-      }
-    }).catch(console.error);
+    getAgenciaBySlug(agenciaSlug)
+      .then(setAgencia)
+      .catch(console.error);
+  }, [agenciaSlug]);
 
+  // 2. Cargar los datos protegidos (pedidos y productos) solo si está logueado
+  useEffect(() => {
     if (isAuthenticated) {
+      // Cargamos pedidos
       setLoadingPedidos(true);
       cargarPedidos();
+      
+      // Cargamos productos de forma independiente
+      getProductosByAgencia(agenciaSlug)
+        .then(setProductos)
+        .catch(console.error);
     }
   }, [agenciaSlug, isAuthenticated]);
 

@@ -16,13 +16,13 @@ export const getProductosByAgencia = async (slug) => {
 };
 
 // --- NUEVO: FUNCIÓN PARA LOGIN ---
-export const loginAdmin = async (password) => {
+export const loginAdmin = async (email, password) => {
   const response = await fetch(`${API_BASE_URL}/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password })
+    body: JSON.stringify({ email, password }) // Enviamos el correo y la contraseña al backend
   });
-  if (!response.ok) throw new Error('Contraseña incorrecta');
+  if (!response.ok) throw new Error('Correo o contraseña incorrectos');
   return await response.json();
 };
 
@@ -75,24 +75,31 @@ export const simularNuevoPedido = async (agenciaSlug) => {
   return await crearPedido(datosSimulados);
 };
 
-export const getProductosByAgenciaId = async (id) => {
-  const res = await fetch(`https://ventadegas.onrender.com/api/agencias/${id}/productos`);
-  return res.json();
-};
-
+// 2. Apagar o encender la tienda
 export const togglePausarTienda = async (id, pausado) => {
-  const res = await fetch(`https://ventadegas.onrender.com/api/agencias/${id}/pausar`, {
+  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital
+  
+  const res = await fetch(`${API_BASE_URL}/agencias/${id}/pausar`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
+    },
     body: JSON.stringify({ pausado })
   });
   return res.json();
 };
 
+// 3. Actualizar el precio
 export const updatePrecioProducto = async (productoId, nuevoPrecio) => {
-  const res = await fetch(`https://ventadegas.onrender.com/api/productos/${productoId}/precio`, {
+  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital
+  
+  const res = await fetch(`${API_BASE_URL}/productos/${productoId}/precio`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
+    },
     body: JSON.stringify({ precio: nuevoPrecio })
   });
   return res.json();

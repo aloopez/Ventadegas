@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { pool } from './src/db.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt'; // Para manejar contraseñas de admin de forma segura
 
 dotenv.config();
 
@@ -178,16 +179,18 @@ app.post('/api/pedidos', async (req, res) => {
 // 4. OBTENER PEDIDOS DE UNA AGENCIA (Para el Admin)
 app.get('/api/agencias/:slug/pedidos', verificarToken, async (req, res) => {
   const { slug } = req.params;
+  const adminAgenciaId = req.admin.agencia_id; // <-- Extraemos la agencia del cajero logueado
+
   try {
-    // CORRECCIÓN PROACTIVA: Unimos la tabla clientes para recuperar el nombre y teléfono
     const query = `
       SELECT p.*, c.nombre as cliente_nombre, c.telefono as cliente_telefono, c.dui 
-      FROM pedidos p 
-      JOIN agencias a ON p.agencia_id = a.id 
-      JOIN clientes c ON p.cliente_id = c.id
-      WHERE a.slug = ? 
-      ORDER BY p.fecha_creacion DESC`;
-    const [pedidos] = await pool.query(query, [slug]);
+       FROM pedidos p 
+       JOIN agencias a ON p.agencia_id = a.id 
+       JOIN clientes c ON p.cliente_id = c.id
+      WHERE a.slug = ? AND p.agencia_id = ? -- BLINDAJE: Verificamos que sea su agencia
+       ORDER BY p.fecha_creacion DESC`;
+       
+    const [pedidos] = await pool.query(query, [slug, adminAgenciaId]);
     res.json(pedidos);
   } catch (err) {
     console.error(err);
@@ -199,8 +202,20 @@ app.get('/api/agencias/:slug/pedidos', verificarToken, async (req, res) => {
 app.patch('/api/pedidos/:id/estado', verificarToken, async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
+  const adminAgenciaId = req.admin.agencia_id;
+
   try {
-    await pool.query('UPDATE pedidos SET estado = ? WHERE id = ?', [estado, id]);
+    // BLINDAJE: Agregamos AND agencia_id = ?
+    const [result] = await pool.query(
+      'UPDATE pedidos SET estado = ? WHERE id = ? AND agencia_id = ?', 
+      [estado, id, adminAgenciaId]
+    );
+
+    // Si affectedRows es 0, significa que el pedido no existe o es de otra distribuidora
+    if (result.affectedRows === 0) {
+      return res.status(403).json({ error: 'No tienes permiso para modificar este pedido' });
+    }
+
     res.json({ success: true });
   } catch (err) {
     console.error(err);
@@ -208,22 +223,53 @@ app.patch('/api/pedidos/:id/estado', verificarToken, async (req, res) => {
   }
 });
 
-// --- ENDPOINT DE LOGIN ---
-app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body;
-  
-  // MVP: Validamos la contraseña (idealmente esto vendría de tu base de datos)
-  const PASSWORD_CORRECTA = process.env.ADMIN_PASSWORD || 'admin123';
+import bcrypt from 'bcrypt'; // ¡No olvides importar esto arriba!
 
-  if (password === PASSWORD_CORRECTA) {
-    // Generamos un token que expira en 8 horas
-    const token = jwt.sign({ rol: 'admin' }, JWT_SECRET, { expiresIn: '8h' });
-    res.json({ token });
-  } else {
-    res.status(401).json({ error: 'Contraseña incorrecta' });
+// ...
+
+app.post('/api/admin/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // 1. Buscamos al usuario por su correo
+    const [usuarios] = await pool.query(
+      'SELECT * FROM usuarios_admin WHERE email = ? AND activo = TRUE', 
+      [email]
+    );
+
+    if (usuarios.length === 0) {
+      return res.status(401).json({ error: 'Credenciales incorrectas' });
+    }
+
+    const usuario = usuarios[0];
+
+    // 2. Comparamos la contraseña enviada con el hash de la BD
+    const passwordCorrecta = await bcrypt.compare(password, usuario.password_hash);
+
+    if (!passwordCorrecta) {
+      return res.status(401).json({ error: 'Credenciales incorrectas' });
+    }
+
+    // 3. Generamos el JWT, pero ahora guardamos la agencia_id y el rol
+    const payload = {
+      usuario_id: usuario.id,
+      agencia_id: usuario.agencia_id, // ¡Súper importante para multitenancy!
+      rol: usuario.rol
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+    
+    // Devolvemos el token y datos extra si el frontend los necesita
+    res.json({ 
+      token, 
+      usuario: { nombre: usuario.nombre, rol: usuario.rol } 
+    });
+
+  } catch (error) {
+    console.error("Error en login:", error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
-
 // 1. Obtener los productos específicos de una agencia
 app.get('/api/agencias/:id/productos', async (req, res) => {
   try {
@@ -234,12 +280,42 @@ app.get('/api/agencias/:id/productos', async (req, res) => {
   }
 });
 
-// 2. Apagar o encender la tienda (Botón de Emergencia)
-app.put('/api/agencias/:id/pausar', async (req, res) => {
+// Apagar o encender la tienda (Botón de Emergencia)
+app.put('/api/agencias/:id/pausar', verificarToken, async (req, res) => {
+  const { id } = req.params;
   const { pausado } = req.body;
+
+  // BLINDAJE: ¿El ID de la URL es igual al de la agencia de este Admin?
+  if (parseInt(id) !== req.admin.agencia_id) {
+    return res.status(403).json({ error: 'Acceso denegado a esta sucursal' });
+  }
+
   try {
-    await pool.query('UPDATE agencias SET pausado = ? WHERE id = ?', [pausado, req.params.id]);
+    await pool.query('UPDATE agencias SET pausado = ? WHERE id = ?', [pausado, id]);
     res.json({ success: true, pausado });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Actualizar el precio de un cilindro
+app.put('/api/productos/:id/precio', verificarToken, async (req, res) => {
+  const { id } = req.params;
+  const { precio } = req.body;
+  const adminAgenciaId = req.admin.agencia_id;
+
+  try {
+    // BLINDAJE: Asegurarnos de que el producto que actualiza pertenezca a su agencia
+    const [result] = await pool.query(
+      'UPDATE productos SET precio = ? WHERE id = ? AND agencia_id = ?', 
+      [precio, id, adminAgenciaId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(403).json({ error: 'Permiso denegado' });
+    }
+
+    res.json({ success: true, precio });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -102,7 +102,38 @@ function AgenciaRouter() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/distribuidora-martinez" replace />} />
+      {/* Nueva pantalla por defecto */}
+      <Route 
+        path="/" 
+        element={
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '50px 20px', 
+            minHeight: '100vh', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            backgroundColor: 'var(--bg-body)'
+          }}>
+            <div style={{
+              background: 'var(--bg-app)',
+              padding: '40px',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-md)',
+              maxWidth: '400px'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}> </div>
+              <h2 style={{ color: 'var(--text-main)', marginBottom: '12px', fontSize: '24px', fontWeight: '800', letterSpacing: '-0.03em' }}>
+                ¡Bienvenido a Ventadegas!
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '15px', lineHeight: '1.6' }}>
+                Por favor, accede al enlace específico proporcionado por tu agencia distribuidora para poder realizar tu pedido.
+              </p>
+            </div>
+          </div>
+        } 
+      />
       <Route path="/:agenciaSlug" element={<AgenciaRouter />} />
       <Route path="/:agenciaSlug/admin" element={<AdminPanel />} />
     </Routes>

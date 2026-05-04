@@ -2,27 +2,25 @@ import { useState } from 'react';
 import { loginAdmin } from '../services/api';
 
 export default function AdminLogin({ onLogin }) {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError(false);
+    setError('');
 
     try {
-      // Intentamos iniciar sesión enviando la contraseña al backend
-      const data = await loginAdmin(password);
+      // Necesitamos actualizar api.js para que reciba email y password
+      const data = await loginAdmin(email, password);
       
-      // Si funciona, guardamos el token que nos dio el backend
       localStorage.setItem('adminToken', data.token);
-      
-      // Le avisamos a la pantalla de AdminPanel que ya puede mostrar los pedidos
       onLogin(true);
     } catch (err) {
       console.error(err);
-      setError(true); // Contraseña incorrecta
+      setError('Correo o contraseña incorrectos.');
     } finally {
       setLoading(false);
     }
@@ -32,17 +30,26 @@ export default function AdminLogin({ onLogin }) {
     <div className="login-container">
       <form onSubmit={handleSubmit} className="login-form">
         <h2>Acceso Administrativo</h2>
-        <p>Ingresa la contraseña para ver los pedidos.</p>
+        <p>Ingresa tus credenciales para continuar.</p>
+        
+        <input 
+          type="email" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Correo electrónico"
+          required
+          autoFocus
+        />
         
         <input 
           type="password" 
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Contraseña"
-          autoFocus
+          required
         />
         
-        {error && <div className="error-msg">Contraseña incorrecta. Intenta de nuevo.</div>}
+        {error && <div className="error-text" style={{color: 'var(--error)'}}>{error}</div>}
         
         <button type="submit" disabled={loading}>
           {loading ? 'Verificando...' : 'Entrar'}
