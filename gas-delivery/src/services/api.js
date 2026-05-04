@@ -74,3 +74,26 @@ export const simularNuevoPedido = async (agenciaSlug) => {
   };
   return await crearPedido(datosSimulados);
 };
+
+export const getProductosByAgenciaId = async (id) => {
+  const res = await fetch(`https://ventadegas.onrender.com/api/agencias/${id}/productos`);
+  return res.json();
+};
+
+export const togglePausarTienda = async (id, pausado) => {
+  const res = await fetch(`https://ventadegas.onrender.com/api/agencias/${id}/pausar`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pausado })
+  });
+  return res.json();
+};
+
+export const updatePrecioProducto = async (productoId, nuevoPrecio) => {
+  const res = await fetch(`https://ventadegas.onrender.com/api/productos/${productoId}/precio`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ precio: nuevoPrecio })
+  });
+  return res.json();
+};

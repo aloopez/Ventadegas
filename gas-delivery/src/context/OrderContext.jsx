@@ -107,7 +107,9 @@ export function OrderProvider({ children, agencia }) {
           ref: datosUsuario.ref
         }));
 
-        const numeroDistribuidora = "50376099967"; 
+    // Tomamos el teléfono de la agencia actual, le quitamos los guiones y le ponemos el 503
+const numeroLimpio = agencia?.telefono ? agencia.telefono.replace(/\D/g, '') : '';
+const numeroDistribuidora = `503${numeroLimpio}`;
         const codigoPedido = data.codigo; 
 
         let mensaje = `¡Hola! Acabo de realizar el pedido *${codigoPedido}*.\n\n`;

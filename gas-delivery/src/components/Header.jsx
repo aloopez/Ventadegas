@@ -22,8 +22,9 @@ export default function Header() {
     horaCierre = parseInt(h, 10) + (parseInt(m, 10) / 60);
   }
 
-  // 3. Verificamos si ahorita mismo está abierto
-  const estaAbierto = tiempoActual >= horaApertura && tiempoActual < horaCierre;
+  // 3. Verificamos si ahorita mismo está abierto Y si la tienda NO está pausada por emergencia
+  const estaDentroDelHorario = tiempoActual >= horaApertura && tiempoActual < horaCierre;
+  const estaAbierto = estaDentroDelHorario && !agencia.pausado;
 
   // 4. Función para darle formato bonito (ej. 19:00:00 -> 7pm)
   const formatearHora = (horaSql) => {

@@ -68,6 +68,7 @@ app.get('/api/agencias/:slug', async (req, res) => {
       hora_cierre: a.hora_cierre,
       costo_envio: a.costo_envio,
       envio_gratis_desde: a.envio_gratis_desde,
+      pausado: a.pausado === 1,
       // ----------------------------------------------------
       tema: {
         primary: a.color_primario || '#2563eb' // Lo dejamos por si tienes código viejo usándolo
@@ -220,6 +221,38 @@ app.post('/api/admin/login', (req, res) => {
     res.json({ token });
   } else {
     res.status(401).json({ error: 'Contraseña incorrecta' });
+  }
+});
+
+// 1. Obtener los productos específicos de una agencia
+app.get('/api/agencias/:id/productos', async (req, res) => {
+  try {
+    const [productos] = await pool.query('SELECT * FROM productos WHERE agencia_id = ?', [req.params.id]);
+    res.json(productos);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. Apagar o encender la tienda (Botón de Emergencia)
+app.put('/api/agencias/:id/pausar', async (req, res) => {
+  const { pausado } = req.body;
+  try {
+    await pool.query('UPDATE agencias SET pausado = ? WHERE id = ?', [pausado, req.params.id]);
+    res.json({ success: true, pausado });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. Actualizar el precio de un cilindro
+app.put('/api/productos/:id/precio', async (req, res) => {
+  const { precio } = req.body;
+  try {
+    await pool.query('UPDATE productos SET precio = ? WHERE id = ?', [precio, req.params.id]);
+    res.json({ success: true, precio });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
