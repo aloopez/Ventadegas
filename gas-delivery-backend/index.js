@@ -266,6 +266,50 @@ app.post('/api/admin/login', async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+// --- REGISTRO DE NUEVO USUARIO (PROTEGIDO CON LLAVE MAESTRA) ---
+app.post('/api/admin/registro', async (req, res) => {
+  // 1. EL CADENERO: Revisamos si trae la Llave Maestra en los headers
+  const apiKey = req.headers['x-api-key'];
+  const superSecret = process.env.SUPER_ADMIN_SECRET || 'llave_por_defecto';
+
+  if (apiKey !== superSecret) {
+    return res.status(403).json({ error: 'Acceso denegado: Llave maestra incorrecta o faltante' });
+  }
+
+  // Si pasamos el cadenero, recibimos los datos del frontend/Postman
+  const { agencia_id, nombre, email, password, rol } = req.body;
+
+  // Validaciones básicas
+  if (!agencia_id || !nombre || !email || !password) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios' });
+  }
+
+  try {
+    const [existente] = await pool.query('SELECT id FROM usuarios_admin WHERE email = ?', [email]);
+    if (existente.length > 0) {
+      return res.status(400).json({ error: 'Este correo ya está registrado' });
+    }
+
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    const [result] = await pool.query(
+      'INSERT INTO usuarios_admin (agencia_id, nombre, email, password_hash, rol) VALUES (?, ?, ?, ?, ?)',
+      [agencia_id, nombre, email, passwordHash, rol || 'dueño']
+    );
+
+    res.status(201).json({ 
+      success: true, 
+      mensaje: 'Usuario creado exitosamente', 
+      usuario_id: result.insertId 
+    });
+
+  } catch (error) {
+    console.error("Error al registrar usuario:", error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
 // 1. Obtener los productos específicos de una agencia
 app.get('/api/agencias/:id/productos', async (req, res) => {
   try {

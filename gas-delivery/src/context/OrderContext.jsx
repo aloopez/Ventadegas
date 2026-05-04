@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { crearPedido } from '../services/api'
 
 const OrderContext = createContext();
 
@@ -84,47 +85,41 @@ export function OrderProvider({ children, agencia }) {
       longitud: datosUsuario.longitud
     };
 
-    try {
-      const response = await fetch('https://ventadegas.onrender.com/api/pedidos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+   try {
+      // 1. Usamos tu función centralizada en lugar del fetch manual
+      const data = await crearPedido(payload);
       
-      const data = await response.json();
-
-      if (response.ok) {
-        setPedidoConfirmado(true);
-
-        // Guardamos los datos para la próxima compra
-        localStorage.setItem('ventadegas_cliente', JSON.stringify({
-          dui: datosUsuario.dui,
-          nombre: datosUsuario.nombre,
-          tel: datosUsuario.tel,
-          dir: datosUsuario.dir,
-          ref: datosUsuario.ref
-        }));
-
-    // Tomamos el teléfono de la agencia actual, le quitamos los guiones y le ponemos el 503
-const numeroLimpio = agencia?.telefono ? agencia.telefono.replace(/\D/g, '') : '';
-const numeroDistribuidora = `503${numeroLimpio}`;
-        const codigoPedido = data.codigo; 
-
-        let mensaje = `¡Hola! Acabo de realizar el pedido *${codigoPedido}*.\n\n`;
-        
-        if (datosUsuario.pago === 'Transferencia') {
-          mensaje += `Aquí envío el comprobante de mi transferencia.`;
-        } else {
-          mensaje += `Mi método de pago es: ${datosUsuario.pago}. Quedo atento a la entrega.`;
-        }
-
-        const urlWhatsApp = `https://wa.me/${numeroDistribuidora}?text=${encodeURIComponent(mensaje)}`;
-        window.location.href = urlWhatsApp;
-      } else {
+      // 2. Verificamos si el backend nos devolvió un error
+      if (data.error) {
         alert(`Error al procesar el pedido: ${data.error}`);
+        return;
       }
+
+      // 3. Si todo sale bien, procesamos la confirmación
+      setPedidoConfirmado(true);
+      
+      localStorage.setItem('ventadegas_cliente', JSON.stringify({
+        dui: datosUsuario.dui,
+        nombre: datosUsuario.nombre,
+        tel: datosUsuario.tel,
+        dir: datosUsuario.dir,
+        ref: datosUsuario.ref
+      }));
+
+      const numeroLimpio = agencia?.telefono ? agencia.telefono.replace(/\D/g, '') : '';
+      const numeroDistribuidora = `503${numeroLimpio}`;
+      const codigoPedido = data.codigo;
+      
+      let mensaje = `¡Hola! Acabo de realizar el pedido *${codigoPedido}*.\n\n`;
+      if (datosUsuario.pago === 'Transferencia') {
+        mensaje += `Aquí envío el comprobante de mi transferencia.`;
+      } else {
+        mensaje += `Mi método de pago es: ${datosUsuario.pago}. Quedo atento a la entrega.`;
+      }
+      
+      const urlWhatsApp = `https://wa.me/${numeroDistribuidora}?text=${encodeURIComponent(mensaje)}`;
+      window.location.href = urlWhatsApp;
+
     } catch (error) {
       console.error("Error de conexión:", error);
       alert("No se pudo conectar con el servidor. Por favor, revisa tu conexión a internet.");
@@ -148,6 +143,7 @@ const numeroDistribuidora = `503${numeroLimpio}`;
       direccion.trim().length > 5
     );
   };
+
 
   return (
     <OrderContext.Provider value={{
