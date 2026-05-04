@@ -1,6 +1,40 @@
 // src/services/api.js
 const API_BASE_URL = 'https://ventadegas.onrender.com/api'; // Cambia esto si tu backend tiene otra URL
 
+// =========================================================
+// HELPER: INTERCEPTOR DE PETICIONES PROTEGIDAS
+// =========================================================
+const fetchProtegido = async (url, options = {}) => {
+  const token = localStorage.getItem('adminToken');
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+    'Authorization': `Bearer ${token}`
+  };
+
+  const response = await fetch(url, { ...options, headers });
+
+  // Si el backend nos rechaza (Token expirado o sin permisos)
+  if (response.status === 401 || response.status === 403) {
+    localStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminAuth');
+    window.location.reload(); // Expulsa al usuario al login inmediatamente
+    throw new Error('Sesión expirada o inválida');
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Error en la petición');
+  }
+
+  return await response.json();
+};
+
+// =========================================================
+// RUTAS PÚBLICAS (No necesitan Token)
+// =========================================================
+
 // 1. Obtener datos de la agencia
 export const getAgenciaBySlug = async (slug) => {
   const response = await fetch(`${API_BASE_URL}/agencias/${slug}`);
@@ -31,7 +65,6 @@ export const loginAdmin = async (email, password) => {
   const data = await response.json();
 
   if (!response.ok) {
-    // Usa el mensaje del backend si existe, si no uno genérico
     throw new Error(data?.error || 'Credenciales inválidas');
   }
 
@@ -40,32 +73,6 @@ export const loginAdmin = async (email, password) => {
   }
 
   return data;  // { token, usuario: { nombre, rol } }
-};
-
-// 3. Obtener pedidos para el Panel Admin (ACTUALIZADO CON JWT)
-export const getPedidosByAgencia = async (slug) => {
-  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital en el navegador
-  const response = await fetch(`${API_BASE_URL}/agencias/${slug}/pedidos`, {
-    headers: {
-      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
-    }
-  });
-  if (!response.ok) throw new Error('Error al obtener pedidos');
-  return await response.json();
-};
-
-// 4. Actualizar estado de un pedido (ACTUALIZADO CON JWT)
-export const updateEstadoPedido = async (id, nuevoEstado) => {
-  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital en el navegador
-  const response = await fetch(`${API_BASE_URL}/pedidos/${id}/estado`, {
-    method: 'PATCH',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
-    },
-    body: JSON.stringify({ estado: nuevoEstado }),
-  });
-  return await response.json();
 };
 
 // 5. Crear un pedido (usado por el cliente)
@@ -91,32 +98,36 @@ export const simularNuevoPedido = async (agenciaSlug) => {
   return await crearPedido(datosSimulados);
 };
 
-// 2. Apagar o encender la tienda
-export const togglePausarTienda = async (id, pausado) => {
-  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital
-  
-  const res = await fetch(`${API_BASE_URL}/agencias/${id}/pausar`, {
-    method: 'PUT',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
-    },
-    body: JSON.stringify({ pausado })
-  });
-  return res.json();
+
+// =========================================================
+// RUTAS PROTEGIDAS (Usan fetchProtegido)
+// =========================================================
+
+// 3. Obtener pedidos para el Panel Admin
+export const getPedidosByAgencia = async (slug) => {
+  return await fetchProtegido(`${API_BASE_URL}/agencias/${slug}/pedidos`);
 };
 
-// 3. Actualizar el precio
-export const updatePrecioProducto = async (productoId, nuevoPrecio) => {
-  const token = localStorage.getItem('adminToken'); // Buscamos la llave digital
-  
-  const res = await fetch(`${API_BASE_URL}/productos/${productoId}/precio`, {
+// 4. Actualizar estado de un pedido
+export const updateEstadoPedido = async (id, nuevoEstado) => {
+  return await fetchProtegido(`${API_BASE_URL}/pedidos/${id}/estado`, {
+    method: 'PATCH',
+    body: JSON.stringify({ estado: nuevoEstado }),
+  });
+};
+
+// 7. Apagar o encender la tienda
+export const togglePausarTienda = async (id, pausado) => {
+  return await fetchProtegido(`${API_BASE_URL}/agencias/${id}/pausar`, {
     method: 'PUT',
-    headers: { 
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}` // Entregamos la llave al backend
-    },
+    body: JSON.stringify({ pausado })
+  });
+};
+
+// 8. Actualizar el precio
+export const updatePrecioProducto = async (productoId, nuevoPrecio) => {
+  return await fetchProtegido(`${API_BASE_URL}/productos/${productoId}/precio`, {
+    method: 'PUT',
     body: JSON.stringify({ precio: nuevoPrecio })
   });
-  return res.json();
 };
