@@ -223,10 +223,6 @@ app.patch('/api/pedidos/:id/estado', verificarToken, async (req, res) => {
   }
 });
 
-import bcrypt from 'bcrypt'; // ¡No olvides importar esto arriba!
-
-// ...
-
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
 
