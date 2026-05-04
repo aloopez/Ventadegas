@@ -15,15 +15,31 @@ export const getProductosByAgencia = async (slug) => {
   return await response.json();
 };
 
-// --- NUEVO: FUNCIÓN PARA LOGIN ---
 export const loginAdmin = async (email, password) => {
-  const response = await fetch(`${API_BASE_URL}/admin/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }) // Enviamos el correo y la contraseña al backend
-  });
-  if (!response.ok) throw new Error('Correo o contraseña incorrectos');
-  return await response.json();
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+  } catch {
+    throw new Error('No se pudo conectar con el servidor. Revisa tu conexión.');
+  }
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    // Usa el mensaje del backend si existe, si no uno genérico
+    throw new Error(data?.error || 'Credenciales inválidas');
+  }
+
+  if (!data.token) {
+    throw new Error('El servidor no devolvió un token válido.');
+  }
+
+  return data;  // { token, usuario: { nombre, rol } }
 };
 
 // 3. Obtener pedidos para el Panel Admin (ACTUALIZADO CON JWT)
