@@ -3,7 +3,7 @@
 Plataforma web **multitenant** (modelo tipo **suscripción**) para que distintos negocios puedan **gestionar sus ventas**, **administrar pedidos** y **analizar datos** desde una sola aplicación.
 
 > 📄 Este README se genera automáticamente en cada push.  
-> Última actualización: `2026-05-04 05:40:09 UTC`
+> Última actualización: `2026-05-04 19:28:50 UTC`
 
 ---
 
@@ -103,6 +103,9 @@ Detectados automáticamente en `gas-delivery-backend/index.js`:
 | `GET` | `/api/agencias/:slug/pedidos` |
 | `PATCH` | `/api/pedidos/:id/estado` |
 | `POST` | `/api/admin/login` |
+| `GET` | `/api/agencias/:id/productos` |
+| `PUT` | `/api/agencias/:id/pausar` |
+| `PUT` | `/api/productos/:id/precio` |
 
 ---
 
