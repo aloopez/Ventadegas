@@ -7,7 +7,8 @@ import {
   simularNuevoPedido,
   togglePausarTienda,
   updatePrecioProducto,
-  getProductosByAgencia // <-- ¡Te faltaba importar esta!
+  getProductosByAgencia,
+  getMetricasAgencia 
 } from "../services/api";
 import AdminLogin from "./AdminLogin";
 
@@ -16,14 +17,14 @@ export default function AdminPanel() {
   const [agencia, setAgencia] = useState(null);
 
   const [pedidos, setPedidos] = useState([]);
-  // NUEVO ESTADO: Para guardar los productos y sus precios
   const [productos, setProductos] = useState([]);
+  const [metricas, setMetricas] = useState(null); // <-- CORREGIDO: El estado va aquí arriba
   
   const [loadingPedidos, setLoadingPedidos] = useState(true);
   const [isSimulating, setIsSimulating] = useState(false);
   
-  // AHORA EL FILTRO SOPORTA 'ajustes'
-  const [filtro, setFiltro] = useState('activos');
+  // AHORA EL FILTRO SOPORTA 'dashboard', 'activos', 'todos', 'ajustes'
+  const [filtro, setFiltro] = useState('dashboard'); // Abrimos por defecto en el dashboard
 
   const [isAuthenticated, setIsAuthenticated] = useState(
     sessionStorage.getItem("adminAuth") === "true",
@@ -43,16 +44,19 @@ export default function AdminPanel() {
       .catch(console.error);
   }, [agenciaSlug]);
 
-  // 2. Cargar los datos protegidos (pedidos y productos) solo si está logueado
+  // 2. Cargar los datos protegidos (pedidos, productos y métricas) solo si está logueado
   useEffect(() => {
     if (isAuthenticated) {
-      // Cargamos pedidos
       setLoadingPedidos(true);
       cargarPedidos();
       
-      // Cargamos productos de forma independiente
       getProductosByAgencia(agenciaSlug)
         .then(setProductos)
+        .catch(console.error);
+
+      // Cargamos las métricas
+      getMetricasAgencia(agenciaSlug)
+        .then(setMetricas)
         .catch(console.error);
     }
   }, [agenciaSlug, isAuthenticated]);
@@ -62,24 +66,28 @@ export default function AdminPanel() {
       pedidos.map((p) => (p.id === id ? { ...p, estado: nuevoEstado } : p)),
     );
     updateEstadoPedido(id, nuevoEstado).catch(console.error);
+    
+    // Si marcamos como entregado, recargamos las métricas para que el tablero se actualice en vivo
+    if (nuevoEstado === 'Entregado') {
+      getMetricasAgencia(agenciaSlug).then(setMetricas).catch(console.error);
+    }
   };
 
   const handleSimularPedido = () => {
     setIsSimulating(true);
     simularNuevoPedido(agenciaSlug).then(() => {
       cargarPedidos();
+      getMetricasAgencia(agenciaSlug).then(setMetricas).catch(console.error); // Recargar dashboard
       setIsSimulating(false);
     });
   };
 
-  // NUEVA FUNCIÓN: Apagar o encender la tienda
   const handleTogglePausar = async () => {
     const nuevoEstado = !agencia.pausado;
-    setAgencia({ ...agencia, pausado: nuevoEstado }); // Actualiza la UI rápido
-    await togglePausarTienda(agencia.id, nuevoEstado); // Guarda en BD
+    setAgencia({ ...agencia, pausado: nuevoEstado }); 
+    await togglePausarTienda(agencia.id, nuevoEstado); 
   };
 
-  // NUEVA FUNCIÓN: Guardar el precio nuevo
   const handleActualizarPrecio = async (productoId, nuevoPrecio) => {
     const precioNumerico = parseFloat(nuevoPrecio);
     if (isNaN(precioNumerico) || precioNumerico <= 0) return alert("Ingresa un precio válido");
@@ -144,7 +152,7 @@ export default function AdminPanel() {
   };
 
   const pedidosFiltrados = pedidos.filter(pedido => {
-    if (filtro === 'todos' || filtro === 'ajustes') return true;
+    if (filtro === 'todos' || filtro === 'ajustes' || filtro === 'dashboard') return true;
     return pedido.estado !== 'Entregado' && pedido.estado !== 'Cancelado';
   });
 
@@ -216,8 +224,24 @@ export default function AdminPanel() {
         
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
           
-          {/* Pestañas de Filtro (Se agregó la pestaña de Ajustes) */}
+          {/* Pestañas de Filtro */}
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <button 
+              onClick={() => setFiltro('dashboard')}
+              style={{
+                padding: "8px 14px",
+                borderRadius: "var(--radius-md)",
+                border: filtro === 'dashboard' ? "1px solid var(--primary)" : "1px solid var(--border-color)",
+                background: filtro === 'dashboard' ? "var(--primary-light)" : "var(--bg-app)",
+                color: filtro === 'dashboard' ? "var(--primary)" : "var(--text-muted)",
+                fontWeight: filtro === 'dashboard' ? "600" : "500",
+                cursor: "pointer",
+                fontSize: "14px",
+                transition: "all 0.15s"
+              }}
+            >
+              📊 Resumen
+            </button>
             <button 
               onClick={() => setFiltro('activos')}
               style={{
@@ -268,8 +292,8 @@ export default function AdminPanel() {
             </button>
           </div>
 
-          {/* Ocultamos el botón de simular si estamos en ajustes */}
-          {filtro !== 'ajustes' && (
+          {/* Ocultamos el botón de simular si estamos en ajustes o dashboard */}
+          {(filtro === 'activos' || filtro === 'todos') && (
             <button
               onClick={handleSimularPedido}
               disabled={isSimulating}
@@ -292,8 +316,76 @@ export default function AdminPanel() {
           )}
         </div>
 
-        {/* --- NUEVA PANTALLA: AJUSTES --- */}
-        {filtro === 'ajustes' ? (
+        {/* --- NUEVA PANTALLA: DASHBOARD --- */}
+        {filtro === 'dashboard' ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            
+            {/* Tarjetas Superiores */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+              
+              <div style={{ padding: "20px", background: "var(--bg-app)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" }}>
+                <h4 style={{ margin: "0 0 5px 0", color: "var(--text-muted)", fontSize: "13px", textTransform: "uppercase" }}>Ventas de hoy</h4>
+                <div style={{ fontSize: "28px", fontWeight: "800", color: "var(--primary)" }}>
+                  ${Number(metricas?.hoy?.ingresos || 0).toFixed(2)}
+                </div>
+                <p style={{ margin: "5px 0 0 0", fontSize: "13px", color: "var(--text-main)" }}>
+                  {metricas?.hoy?.total_pedidos || 0} pedidos entregados
+                </p>
+              </div>
+
+              <div style={{ padding: "20px", background: "var(--bg-app)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" }}>
+                <h4 style={{ margin: "0 0 5px 0", color: "var(--text-muted)", fontSize: "13px", textTransform: "uppercase" }}>En progreso</h4>
+                <div style={{ fontSize: "28px", fontWeight: "800", color: "var(--text-main)" }}>
+                  {metricas?.pendientes || 0}
+                </div>
+                <p style={{ margin: "5px 0 0 0", fontSize: "13px", color: "var(--error)" }}>
+                  Requieren atención
+                </p>
+              </div>
+            </div>
+
+            {/* Mini Gráfico CSS de los últimos 7 días */}
+            <div style={{ padding: "20px", background: "var(--bg-app)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" }}>
+              <h3 style={{ margin: "0 0 20px 0", color: "var(--text-main)", fontSize: "16px" }}>Últimos 7 días</h3>
+              
+              {!metricas?.semana || metricas.semana.length === 0 ? (
+                <p style={{ color: "var(--text-muted)", fontSize: "14px", textAlign: "center" }}>No hay datos suficientes</p>
+              ) : (
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", height: "150px", gap: "8px", paddingTop: "20px" }}>
+                  {metricas.semana.map((dia, i) => {
+                    const maxIngreso = Math.max(...metricas.semana.map(d => Number(d.ingresos)), 1); // El 1 evita división por cero
+                    const alturaPorcentaje = maxIngreso === 0 ? 0 : (Number(dia.ingresos) / maxIngreso) * 100;
+                    
+                    // Formatear fecha asegurando la zona horaria correcta
+                    const fechaObj = new Date(dia.fecha);
+                    fechaObj.setMinutes(fechaObj.getMinutes() + fechaObj.getTimezoneOffset()); // Ajuste rápido de zona UTC a local
+                    const fechaCorta = fechaObj.toLocaleDateString('es-ES', { weekday: 'short', timeZone: 'America/El_Salvador' });
+
+                    return (
+                      <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, gap: "8px" }}>
+                        <span style={{ fontSize: "11px", color: "var(--text-main)", fontWeight: "600" }}>
+                          ${Number(dia.ingresos).toFixed(0)}
+                        </span>
+                        <div style={{ 
+                          width: "100%", 
+                          maxWidth: "40px", 
+                          height: `${Math.max(alturaPorcentaje, 5)}%`, // Mínimo 5% para que siempre haya barrita
+                          background: "var(--primary)", 
+                          borderRadius: "4px 4px 0 0",
+                          opacity: 0.85
+                        }}></div>
+                        <span style={{ fontSize: "12px", color: "var(--text-muted)", textTransform: "capitalize" }}>
+                          {fechaCorta}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+        ) : filtro === 'ajustes' ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             
             {/* Módulo: Botón de Pánico */}

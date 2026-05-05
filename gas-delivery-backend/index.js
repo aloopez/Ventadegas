@@ -198,6 +198,58 @@ app.get('/api/agencias/:slug/pedidos', verificarToken, async (req, res) => {
   }
 });
 
+// 6. OBTENER MÉTRICAS DEL DASHBOARD
+app.get('/api/agencias/:slug/metricas', verificarToken, async (req, res) => {
+  const adminAgenciaId = req.admin.agencia_id;
+
+  try {
+    // A. Ingresos y Pedidos de HOY (Ajustado a UTC-6)
+    const queryHoy = `
+      SELECT 
+        COUNT(*) as total_pedidos,
+        COALESCE(SUM(total), 0) as ingresos
+      FROM pedidos 
+      WHERE agencia_id = ? 
+        AND estado = 'Entregado' 
+        AND DATE(DATE_SUB(fecha_creacion, INTERVAL 6 HOUR)) = DATE(DATE_SUB(NOW(), INTERVAL 6 HOUR))
+    `;
+    const [hoy] = await pool.query(queryHoy, [adminAgenciaId]);
+
+    // B. Pedidos en progreso
+    const queryPendientes = `
+      SELECT COUNT(*) as pendientes 
+      FROM pedidos 
+      WHERE agencia_id = ? AND estado IN ('Pendiente', 'Confirmado', 'En camino')
+    `;
+    const [pendientes] = await pool.query(queryPendientes, [adminAgenciaId]);
+
+    // C. Gráfico de los últimos 7 días
+    const querySemana = `
+      SELECT 
+        DATE(DATE_SUB(fecha_creacion, INTERVAL 6 HOUR)) as fecha,
+        COUNT(*) as cantidad,
+        COALESCE(SUM(total), 0) as ingresos
+      FROM pedidos
+      WHERE agencia_id = ? 
+        AND estado = 'Entregado'
+        AND DATE_SUB(fecha_creacion, INTERVAL 6 HOUR) >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+      GROUP BY fecha
+      ORDER BY fecha ASC
+    `;
+    const [semana] = await pool.query(querySemana, [adminAgenciaId]);
+
+    res.json({
+      hoy: hoy[0],
+      pendientes: pendientes[0].pendientes,
+      semana
+    });
+
+  } catch (error) {
+    console.error("Error al cargar métricas:", error);
+    res.status(500).json({ error: 'Error al obtener métricas' });
+  }
+});
+
 // 5. ACTUALIZAR ESTADO DE PEDIDO (Desde el Admin)
 app.patch('/api/pedidos/:id/estado', verificarToken, async (req, res) => {
   const { id } = req.params;

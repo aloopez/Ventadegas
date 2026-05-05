@@ -31,6 +31,11 @@ const fetchProtegido = async (url, options = {}) => {
   return await response.json();
 };
 
+// 9. Obtener métricas del Dashboard
+export const getMetricasAgencia = async (slug) => {
+  return await fetchProtegido(`${API_BASE_URL}/agencias/${slug}/metricas`);
+};
+
 // =========================================================
 // RUTAS PÚBLICAS (No necesitan Token)
 // =========================================================
