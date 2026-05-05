@@ -108,7 +108,7 @@ export default function Summary() {
       
       <p className="nota-pie">
         Entregas de lunes a domingo · {agencia?.hora_apertura?.slice(0, 5) || '07:00'} a {agencia?.hora_cierre?.slice(0, 5) || '19:00'}<br/>
-        Envío gratis en pedidos de {agencia?.envio_gratis || 0} o más. Para pedidos menores, el costo de envío es de {agencia?.costo_envio || 0}.
+        Envío gratis en pedidos de {agencia?.envio_gratis_desde || 0} o más. Para pedidos menores, el costo de envío es de {agencia?.costo_envio || 0}.
       </p>
     </>
   );
