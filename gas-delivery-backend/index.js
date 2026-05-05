@@ -255,6 +255,31 @@ app.get('/api/agencias/:slug/metricas', verificarToken, async (req, res) => {
   }
 });
 
+// 5. ACTUALIZAR ESTADO DE PEDIDO (Desde el Admin)
+app.patch('/api/pedidos/:id/estado', verificarToken, async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  const adminAgenciaId = req.admin.agencia_id;
+
+  try {
+    // BLINDAJE: Verificamos que el pedido sea de la agencia correcta
+    const [result] = await pool.query(
+      'UPDATE pedidos SET estado = ? WHERE id = ? AND agencia_id = ?',
+       [estado, id, adminAgenciaId]
+    );
+
+    // Si affectedRows es 0, significa que el pedido no existe o es de otra distribuidora
+    if (result.affectedRows === 0) {
+      return res.status(403).json({ error: 'No tienes permiso para modificar este pedido' });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/admin/login', async (req, res) => {
   const { email, password } = req.body;
 
