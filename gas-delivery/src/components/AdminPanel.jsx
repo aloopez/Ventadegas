@@ -37,6 +37,29 @@ export default function AdminPanel() {
     });
   };
 
+  // NUEVO: Generador de sonido de alerta nativo
+  const reproducirSonidoAlerta = () => {
+    try {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      
+      oscillator.type = 'sine'; // Sonido suave tipo campana
+      oscillator.frequency.setValueAtTime(880, context.currentTime); // 880Hz (Nota A5)
+      
+      // Control de volumen para que no aturda
+      gainNode.gain.setValueAtTime(0.1, context.currentTime); 
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      
+      oscillator.start();
+      oscillator.stop(context.currentTime + 0.3); // Dura 0.3 segundos
+    } catch (e) {
+      console.log("El navegador bloqueó el sonido automático hasta que el usuario interactúe.");
+    }
+  };
+
   // 1. Cargar los datos públicos de la agencia
   useEffect(() => {
     getAgenciaBySlug(agenciaSlug)
@@ -44,21 +67,42 @@ export default function AdminPanel() {
       .catch(console.error);
   }, [agenciaSlug]);
 
-  // 2. Cargar los datos protegidos (pedidos, productos y métricas) solo si está logueado
+  // 2. Cargar datos protegidos y configurar POLLING de 30 segundos
   useEffect(() => {
+    let intervalo;
+
     if (isAuthenticated) {
       setLoadingPedidos(true);
-      cargarPedidos();
       
-      getProductosByAgencia(agenciaSlug)
-        .then(setProductos)
-        .catch(console.error);
+      // Carga inicial
+      getPedidosByAgencia(agenciaSlug).then((data) => {
+        setPedidos(data);
+        setLoadingPedidos(false);
+      });
+      getProductosByAgencia(agenciaSlug).then(setProductos).catch(console.error);
+      getMetricasAgencia(agenciaSlug).then(setMetricas).catch(console.error);
 
-      // Cargamos las métricas
-      getMetricasAgencia(agenciaSlug)
-        .then(setMetricas)
-        .catch(console.error);
+      // POLLING: Ejecutar cada 30 segundos
+      intervalo = setInterval(() => {
+        getPedidosByAgencia(agenciaSlug).then((nuevosPedidos) => {
+          setPedidos(pedidosAnteriores => {
+            // Si hay un pedido nuevo (comparamos el ID del más reciente)
+            if (nuevosPedidos.length > 0 && pedidosAnteriores.length > 0) {
+              if (nuevosPedidos[0].id !== pedidosAnteriores[0].id) {
+                reproducirSonidoAlerta(); // Piiiip!
+              }
+            }
+            return nuevosPedidos;
+          });
+        }).catch(console.error);
+        
+        // También actualizamos las métricas silenciosamente
+        getMetricasAgencia(agenciaSlug).then(setMetricas).catch(console.error);
+      }, 30000); // 30000 ms = 30 segundos
     }
+
+    // Limpiamos el intervalo si el admin sale de la pantalla
+    return () => clearInterval(intervalo);
   }, [agenciaSlug, isAuthenticated]);
 
   const cambiarEstado = (id, nuevoEstado) => {

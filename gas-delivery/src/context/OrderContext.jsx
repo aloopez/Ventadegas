@@ -109,6 +109,8 @@ export function OrderProvider({ children, agencia }) {
       const numeroLimpio = agencia?.telefono ? agencia.telefono.replace(/\D/g, '') : '';
       const numeroDistribuidora = `503${numeroLimpio}`;
       const codigoPedido = data.codigo;
+
+      const urlRastreo = `${window.location.origin}/rastreo/${codigoPedido}`;
       
       let mensaje = `¡Hola! Acabo de realizar el pedido *${codigoPedido}*.\n\n`;
       if (datosUsuario.pago === 'Transferencia') {
@@ -116,6 +118,8 @@ export function OrderProvider({ children, agencia }) {
       } else {
         mensaje += `Mi método de pago es: ${datosUsuario.pago}. Quedo atento a la entrega.`;
       }
+
+      mensaje += `\n\n📌 *Sigo el estado de mi pedido aquí:*\n${urlRastreo}`;
       
       const urlWhatsApp = `https://wa.me/${numeroDistribuidora}?text=${encodeURIComponent(mensaje)}`;
       window.location.href = urlWhatsApp;

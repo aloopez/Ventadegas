@@ -82,6 +82,20 @@ export default function CheckoutForm() {
         <option value="Transferencia">Transferencia bancaria</option>
       </select>
 
+      {/* NUEVO: Mostrar cuenta bancaria dinámica de la agencia */}
+      {datosUsuario.pago === 'Transferencia' && (
+        <div style={{ 
+          padding: '12px', background: 'var(--bg-app)', border: '1px solid var(--primary)', 
+          borderRadius: 'var(--radius-sm)', marginTop: '10px', fontSize: '13px', color: 'var(--text-main)' 
+        }}>
+          <strong>💳 Depositar a:</strong><br/>
+          Banco: {agencia.banco_nombre || 'Pendiente de configurar'}<br/>
+          Cuenta: <strong style={{ fontSize: '15px' }}>{agencia.cuenta_bancaria || '---'}</strong><br/>
+          Titular: {agencia.cuenta_titular || '---'}<br/>
+          <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* Envía el comprobante por WhatsApp al finalizar.</span>
+        </div>
+      )}
+
       {/* --- NUEVO: PREGUNTA DE CAMBIO CONDICIONAL MEJORADA --- */}
       {datosUsuario.pago === 'Efectivo' && (
         <div className="cash-change-container">

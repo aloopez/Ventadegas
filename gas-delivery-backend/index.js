@@ -70,6 +70,9 @@ app.get('/api/agencias/:slug', async (req, res) => {
       costo_envio: a.costo_envio,
       envio_gratis_desde: a.envio_gratis_desde,
       pausado: a.pausado === 1,
+      banco_nombre: a.banco_nombre,
+      cuenta_bancaria: a.cuenta_bancaria,
+      cuenta_titular: a.cuenta_titular,
       // ----------------------------------------------------
       tema: {
         primary: a.color_primario || '#2563eb' // Lo dejamos por si tienes código viejo usándolo
@@ -150,6 +153,19 @@ app.post('/api/pedidos', async (req, res) => {
         [dui, cliente_nombre, cliente_telefono]
       );
       cliente_id = nuevoCliente.insertId;
+    }
+
+    // --- NUEVO: LÍMITE DE PEDIDOS (RATE LIMITING) ---
+    const [recentOrders] = await pool.query(
+      `SELECT COUNT(*) as count FROM pedidos 
+       WHERE cliente_id = ? AND fecha_creacion >= DATE_SUB(NOW(), INTERVAL 1 HOUR)`,
+      [cliente_id]
+    );
+
+    if (recentOrders[0].count >= 3) {
+      return res.status(429).json({ 
+        error: 'Has alcanzado el límite de 3 pedidos por hora por seguridad. Si es una emergencia, escríbenos al WhatsApp.' 
+      });
     }
 
     // 2. Insertar el pedido usando el cliente_id (ACTUALIZADO CON GPS)

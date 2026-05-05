@@ -103,6 +103,13 @@ export const simularNuevoPedido = async (agencia) => {
   return await crearPedido(datosSimulados);
 };
 
+// 7. Buscar un pedido por su código (Rastreo)
+export const getRastreoPedido = async (codigo) => {
+  const response = await fetch(`${API_BASE_URL}/rastreo/${codigo}`);
+  if (!response.ok) throw new Error('Pedido no encontrado');
+  return await response.json();
+};
+
 
 // =========================================================
 // RUTAS PROTEGIDAS (Usan fetchProtegido)

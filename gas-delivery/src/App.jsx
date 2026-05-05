@@ -6,6 +6,7 @@ import ZoneSelector from './components/ZoneSelector';
 import CheckoutForm from './components/CheckoutForm';
 import Summary from './components/Summary';
 import AdminPanel from './components/AdminPanel';
+import Rastreo from './components/Rastreo';
 
 // Importamos el Proveedor y el Hook del Contexto
 import { OrderProvider, useOrder } from './context/OrderContext';
@@ -134,6 +135,7 @@ export default function App() {
           </div>
         } 
       />
+      <Route path="/rastreo/:codigo" element={<Rastreo />} />
       <Route path="/:agenciaSlug" element={<AgenciaRouter />} />
       <Route path="/:agenciaSlug/admin" element={<AdminPanel />} />
     </Routes>
