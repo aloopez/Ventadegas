@@ -176,6 +176,31 @@ app.post('/api/pedidos', async (req, res) => {
   }
 });
 
+// 7. RASTREO PÚBLICO DE PEDIDOS
+app.get('/api/rastreo/:codigo', async (req, res) => {
+  const { codigo } = req.params;
+  try {
+    // Buscamos el pedido y unimos los datos de la agencia para mostrar de quién es
+    const query = `
+      SELECT p.codigo_pedido, p.estado, p.fecha_creacion, p.total, p.direccion_entrega, 
+             a.nombre as agencia_nombre, a.telefono as agencia_telefono 
+      FROM pedidos p 
+      JOIN agencias a ON p.agencia_id = a.id 
+      WHERE p.codigo_pedido = ?
+    `;
+    const [pedido] = await pool.query(query, [codigo]);
+    
+    if (pedido.length === 0) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+    
+    res.json(pedido[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al buscar el pedido' });
+  }
+});
+
 // 4. OBTENER PEDIDOS DE UNA AGENCIA (Para el Admin)
 app.get('/api/agencias/:slug/pedidos', verificarToken, async (req, res) => {
   const { slug } = req.params;
