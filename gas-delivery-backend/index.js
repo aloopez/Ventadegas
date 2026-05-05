@@ -200,43 +200,48 @@ app.get('/api/agencias/:slug/pedidos', verificarToken, async (req, res) => {
 
 // 6. OBTENER MÉTRICAS DEL DASHBOARD
 app.get('/api/agencias/:slug/metricas', verificarToken, async (req, res) => {
+  const { slug } = req.params;
   const adminAgenciaId = req.admin.agencia_id;
 
   try {
     // A. Ingresos y Pedidos de HOY (Ajustado a UTC-6)
     const queryHoy = `
       SELECT 
-        COUNT(*) as total_pedidos,
-        COALESCE(SUM(total), 0) as ingresos
-      FROM pedidos 
-      WHERE agencia_id = ? 
-        AND estado = 'Entregado' 
-        AND DATE(DATE_SUB(fecha_creacion, INTERVAL 6 HOUR)) = DATE(DATE_SUB(NOW(), INTERVAL 6 HOUR))
+        COUNT(p.id) as total_pedidos,
+        COALESCE(SUM(p.total), 0) as ingresos
+      FROM pedidos p
+      JOIN agencias a ON p.agencia_id = a.id
+      WHERE a.slug = ? AND p.agencia_id = ?
+        AND p.estado = 'Entregado' 
+        AND DATE(DATE_SUB(p.fecha_creacion, INTERVAL 6 HOUR)) = DATE(DATE_SUB(NOW(), INTERVAL 6 HOUR))
     `;
-    const [hoy] = await pool.query(queryHoy, [adminAgenciaId]);
+    const [hoy] = await pool.query(queryHoy, [slug, adminAgenciaId]);
 
     // B. Pedidos en progreso
     const queryPendientes = `
-      SELECT COUNT(*) as pendientes 
-      FROM pedidos 
-      WHERE agencia_id = ? AND estado IN ('Pendiente', 'Confirmado', 'En camino')
+      SELECT COUNT(p.id) as pendientes 
+      FROM pedidos p
+      JOIN agencias a ON p.agencia_id = a.id
+      WHERE a.slug = ? AND p.agencia_id = ? 
+        AND p.estado IN ('Pendiente', 'Confirmado', 'En camino')
     `;
-    const [pendientes] = await pool.query(queryPendientes, [adminAgenciaId]);
+    const [pendientes] = await pool.query(queryPendientes, [slug, adminAgenciaId]);
 
     // C. Gráfico de los últimos 7 días
     const querySemana = `
       SELECT 
-        DATE(DATE_SUB(fecha_creacion, INTERVAL 6 HOUR)) as fecha,
-        COUNT(*) as cantidad,
-        COALESCE(SUM(total), 0) as ingresos
-      FROM pedidos
-      WHERE agencia_id = ? 
-        AND estado = 'Entregado'
-        AND DATE_SUB(fecha_creacion, INTERVAL 6 HOUR) >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        DATE(DATE_SUB(p.fecha_creacion, INTERVAL 6 HOUR)) as fecha,
+        COUNT(p.id) as cantidad,
+        COALESCE(SUM(p.total), 0) as ingresos
+      FROM pedidos p
+      JOIN agencias a ON p.agencia_id = a.id
+      WHERE a.slug = ? AND p.agencia_id = ?
+        AND p.estado = 'Entregado'
+        AND DATE_SUB(p.fecha_creacion, INTERVAL 6 HOUR) >= DATE_SUB(NOW(), INTERVAL 7 DAY)
       GROUP BY fecha
       ORDER BY fecha ASC
     `;
-    const [semana] = await pool.query(querySemana, [adminAgenciaId]);
+    const [semana] = await pool.query(querySemana, [slug, adminAgenciaId]);
 
     res.json({
       hoy: hoy[0],
@@ -247,31 +252,6 @@ app.get('/api/agencias/:slug/metricas', verificarToken, async (req, res) => {
   } catch (error) {
     console.error("Error al cargar métricas:", error);
     res.status(500).json({ error: 'Error al obtener métricas' });
-  }
-});
-
-// 5. ACTUALIZAR ESTADO DE PEDIDO (Desde el Admin)
-app.patch('/api/pedidos/:id/estado', verificarToken, async (req, res) => {
-  const { id } = req.params;
-  const { estado } = req.body;
-  const adminAgenciaId = req.admin.agencia_id;
-
-  try {
-    // BLINDAJE: Agregamos AND agencia_id = ?
-    const [result] = await pool.query(
-      'UPDATE pedidos SET estado = ? WHERE id = ? AND agencia_id = ?', 
-      [estado, id, adminAgenciaId]
-    );
-
-    // Si affectedRows es 0, significa que el pedido no existe o es de otra distribuidora
-    if (result.affectedRows === 0) {
-      return res.status(403).json({ error: 'No tienes permiso para modificar este pedido' });
-    }
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
   }
 });
 

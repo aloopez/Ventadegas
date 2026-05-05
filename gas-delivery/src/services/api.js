@@ -91,9 +91,9 @@ export const crearPedido = async (datosPedido) => {
 };
 
 // 6. Simular pedido enviándolo al backend real
-export const simularNuevoPedido = async (agenciaSlug) => {
+export const simularNuevoPedido = async (agencia) => {
   const datosSimulados = {
-    agencia_id: 1, 
+    agencia_id: agencia.id,
     cliente_nombre: "Cliente Simulado",
     cliente_telefono: "7000-0000",
     direccion_entrega: "Dirección de prueba MySQL",

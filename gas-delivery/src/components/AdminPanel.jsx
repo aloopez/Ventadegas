@@ -75,7 +75,7 @@ export default function AdminPanel() {
 
   const handleSimularPedido = () => {
     setIsSimulating(true);
-    simularNuevoPedido(agenciaSlug).then(() => {
+    simularNuevoPedido(agencia.id).then(() => {
       cargarPedidos();
       getMetricasAgencia(agenciaSlug).then(setMetricas).catch(console.error); // Recargar dashboard
       setIsSimulating(false);
