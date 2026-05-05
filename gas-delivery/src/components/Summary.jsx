@@ -62,33 +62,6 @@ export default function Summary() {
           <span>${totales.total.toFixed(2)}</span>
         </div>
       </div>
-
-      {/* --- NUEVO: CAJA DE TRANSFERENCIA CONDICIONAL --- */}
-      {datosUsuario.pago === 'Transferencia' && (
-        <div style={{ 
-          backgroundColor: 'var(--primary-light)', 
-          padding: '16px', 
-          borderRadius: 'var(--radius-md)', 
-          marginBottom: '20px', 
-          border: '2px solid var(--primary)', 
-          color: 'var(--text-main)' 
-        }}>
-          <h4 style={{ marginBottom: '12px', fontSize: '15px', color: 'var(--primary)', fontWeight: '700' }}>
-            Cuentas habilitadas:
-          </h4>
-          <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-            <span><strong>Banco Agrícola</strong> (Ahorro)</span>
-            <span style={{ fontFamily: 'monospace', fontWeight: '600' }}>0000-0000-00</span>
-          </div>
-          <div style={{ fontSize: '14px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
-            <span><strong>Cuscatlán</strong> (Corriente)</span>
-            <span style={{ fontFamily: 'monospace', fontWeight: '600' }}>1111-2222-33</span>
-          </div>
-          <p style={{ fontSize: '13px', marginTop: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-            * Al presionar "Confirmar pedido", envía el comprobante al WhatsApp que se abrirá a continuación.
-          </p>
-        </div>
-      )}
       {/* ------------------------------------------------ */}
 
       {!tiendaAbierta && (

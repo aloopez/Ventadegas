@@ -1,7 +1,7 @@
 import { useOrder } from '../context/OrderContext';
 
 export default function CheckoutForm() {
-  const { datosUsuario, setDatosUsuario, hora: horaActiva, setHora } = useOrder();
+  const { datosUsuario, setDatosUsuario, hora: horaActiva, setHora, agencia } = useOrder();
   const horarios = [
     'Lo antes posible', '10:00 - 12:00', '12:00 - 14:00', '14:00 - 17:00', '17:00 - 19:00'
   ];
