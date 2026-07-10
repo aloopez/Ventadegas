@@ -3,7 +3,7 @@
 Plataforma web **multitenant** (modelo tipo **suscripción / SaaS**) para que distintos negocios o distribuidoras de gas puedan **gestionar sus ventas**, **administrar pedidos**, **rastrear envíos** y **analizar métricas** desde una sola aplicación.
 
 > 📄 Este README se genera automáticamente en cada push.  
-> Última actualización: `2026-07-09 11:06:33 UTC`
+> Última actualización: `2026-07-10 03:50:31 UTC`
 
 ---
 
