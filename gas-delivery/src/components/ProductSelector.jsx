@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useOrder } from '../context/OrderContext';
 import { getProductosByAgencia } from '../services/api';
+import { SkeletonProductRow } from './Skeleton';
 
 // --- NUEVO: Componente SVG del Cilindro de Gas ---
 function TamboIcon() {
@@ -45,7 +46,16 @@ export default function ProductSelector() {
       .catch(err => console.error("Error cargando productos:", err));
   }, [agencia.slug]);
 
-  if (loading) return <div className="section">Cargando productos...</div>;
+  if (loading) return (
+    <div className="section">
+      <div className="step-label">Paso 1 – Elige tu cilindro</div>
+      <div className="prod-list">
+        <SkeletonProductRow />
+        <SkeletonProductRow />
+        <SkeletonProductRow />
+      </div>
+    </div>
+  );
 
   return (
     <div className="section">

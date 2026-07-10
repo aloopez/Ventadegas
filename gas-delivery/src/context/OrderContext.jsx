@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { crearPedido } from '../services/api'
+import { useToast } from '../components/Toast';
 
 const OrderContext = createContext();
 
 export function OrderProvider({ children, agencia }) {
+  const toast = useToast();
   const [producto, setProducto] = useState(null);
   const [cantidad, setCantidad] = useState(1);
   const [zona, setZona] = useState(agencia?.zonas?.[0] || 'Local'); 
@@ -57,7 +59,7 @@ export function OrderProvider({ children, agencia }) {
 
   const hacerPedido = async () => {
     if (!esFormularioValido()) {
-      alert('Por favor completa tu nombre, teléfono y dirección correctamente.');
+      toast.error('Por favor completa tu nombre, teléfono y dirección correctamente.');
       return;
     }
 
@@ -89,13 +91,7 @@ export function OrderProvider({ children, agencia }) {
       // 1. Usamos tu función centralizada en lugar del fetch manual
       const data = await crearPedido(payload);
       
-      // 2. Verificamos si el backend nos devolvió un error
-      if (data.error) {
-        alert(`Error al procesar el pedido: ${data.error}`);
-        return;
-      }
-
-      // 3. Si todo sale bien, procesamos la confirmación
+      // 2. Si todo sale bien, procesamos la confirmación
       setPedidoConfirmado(true);
       
       localStorage.setItem('ventadegas_cliente', JSON.stringify({
@@ -126,7 +122,7 @@ export function OrderProvider({ children, agencia }) {
 
     } catch (error) {
       console.error("Error de conexión:", error);
-      alert("No se pudo conectar con el servidor. Por favor, revisa tu conexión a internet.");
+      toast.error("No se pudo conectar con el servidor. Revisa tu conexión a internet.");
     }
   };
 
@@ -148,12 +144,15 @@ export function OrderProvider({ children, agencia }) {
     );
   };
 
+  const currentStep = !producto ? 1 : !datosUsuario.nombre ? 2 : !esFormularioValido() ? 3 : 4;
+
 
   return (
     <OrderContext.Provider value={{
       agencia, producto, setProducto, cantidad, cambiarCantidad,
       zona, setZona, hora, setHora, datosUsuario, setDatosUsuario,
-      pedidoConfirmado, setPedidoConfirmado, calcularTotal, hacerPedido, esFormularioValido
+      pedidoConfirmado, setPedidoConfirmado, calcularTotal, hacerPedido, esFormularioValido,
+      currentStep
     }}>
       {children}
     </OrderContext.Provider>

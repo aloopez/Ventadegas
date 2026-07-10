@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, useParams, Navigate } from 'react-router-dom';
+import { Routes, Route, useParams } from 'react-router-dom';
 import Header from './components/Header';
 import ProductSelector from './components/ProductSelector';
 import ZoneSelector from './components/ZoneSelector';
@@ -7,32 +7,35 @@ import CheckoutForm from './components/CheckoutForm';
 import Summary from './components/Summary';
 import AdminPanel from './components/AdminPanel';
 import Rastreo from './components/Rastreo';
+import ProgressBar from './components/ProgressBar';
+import { SkeletonCard } from './components/Skeleton';
 
-// Importamos el Proveedor y el Hook del Contexto
 import { OrderProvider, useOrder } from './context/OrderContext';
 
-// Importamos nuestra nueva Mock API (reemplaza la importación estática anterior)
+import { ToastProvider } from './components/Toast';
 import { getAgenciaBySlug } from './services/api.js';
 
 function TiendaAgenciaContent() {
-  const { agencia, pedidoConfirmado, setPedidoConfirmado, datosUsuario } = useOrder();
+  const { agencia, pedidoConfirmado, setPedidoConfirmado, datosUsuario, currentStep } = useOrder();
 
   return (
     <div className="page" style={{ '--primary': agencia.tema?.primary || '#2563eb' }}>
       <Header />
-
       {!pedidoConfirmado ? (
-        <div className="main">
-          <div className="content">
-            <ProductSelector />
-            <hr className="divider" />
-            <ZoneSelector />
-            <hr className="divider" />
-            <CheckoutForm />
-            <hr className="divider" />
-            <Summary />
+        <>
+          <ProgressBar currentStep={currentStep} />
+          <div className="main">
+            <div className="content">
+              <ProductSelector />
+              <hr className="divider" />
+              <ZoneSelector />
+              <hr className="divider" />
+              <CheckoutForm />
+              <hr className="divider" />
+              <Summary />
+            </div>
           </div>
-        </div>
+        </>
       ) : (
         <div className="success show">
           <div className="check-circle">✓</div>
@@ -82,8 +85,16 @@ function AgenciaRouter() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-main)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <h2>Cargando tienda... ⏳</h2>
+      <div className="page" style={{ margin: '0 auto', padding: '20px' }}>
+        <div style={{ background: 'var(--bg-app)', padding: '1.25rem', borderBottom: '0.5px solid var(--border)', marginBottom: '.5rem', borderRadius: 'var(--radius-lg)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+            <div className="skeleton-line" style={{ width: '40px', height: '40px', borderRadius: 'var(--radius-md)' }} />
+            <div className="skeleton-line" style={{ width: '150px', height: '18px' }} />
+          </div>
+          <div className="skeleton-line" style={{ width: '100px', height: '12px', marginLeft: '52px' }} />
+          <div className="skeleton-line" style={{ width: '180px', height: '12px', marginLeft: '52px', marginTop: '8px' }} />
+        </div>
+        <SkeletonCard lines={3} />
       </div>
     );
   }
@@ -102,7 +113,8 @@ function AgenciaRouter() {
 
 export default function App() {
   return (
-    <Routes>
+    <ToastProvider>
+      <Routes>
       {/* Nueva pantalla por defecto */}
       <Route 
         path="/" 
@@ -139,5 +151,6 @@ export default function App() {
       <Route path="/:agenciaSlug" element={<AgenciaRouter />} />
       <Route path="/:agenciaSlug/admin" element={<AdminPanel />} />
     </Routes>
+    </ToastProvider>
   );
 }

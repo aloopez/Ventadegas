@@ -1,0 +1,10 @@
+{
+  "name": "ventadegas",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Monorepo: plataforma SaaS de venta y distribución de gas a domicilio",
+  "scripts": {
+    "generate-readme": "node scripts/generate-readme.js"
+  }
+}

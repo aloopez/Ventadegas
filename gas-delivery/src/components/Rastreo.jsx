@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getRastreoPedido } from '../services/api';
 
 export default function Rastreo() {
@@ -8,19 +8,34 @@ export default function Rastreo() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
+  const loadPedido = () => {
+    setLoading(true);
+    setError(false);
     getRastreoPedido(codigo)
-      .then(data => {
-        setPedido(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
-  }, [codigo]);
+      .then(data => { setPedido(data); setLoading(false); })
+      .catch(() => { setError(true); setLoading(false); });
+  };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>Buscando pedido ⏳...</div>;
+  useEffect(() => { loadPedido(); }, [codigo]);
+
+  if (loading) return (
+    <div className="page" style={{ padding: '20px', maxWidth: '500px' }}>
+      <div style={{ background: 'var(--bg-app)', padding: '24px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div className="skeleton-line" style={{ width: '120px', height: '18px', margin: '0 auto 8px' }} />
+          <div className="skeleton-line" style={{ width: '80px', height: '14px', margin: '0 auto' }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '10px 0' }}>
+          {[1,2,3,4].map(i => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div className="skeleton-line" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+              <div className="skeleton-line" style={{ width: '100px', height: '15px' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
   if (error) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--error)' }}>❌ Pedido no encontrado. Verifica el código.</div>;
 
   const estados = ['Pendiente', 'Confirmado', 'En camino', 'Entregado'];
@@ -68,7 +83,7 @@ export default function Rastreo() {
         )}
 
         <div style={{ marginTop: '24px', paddingTop: '15px', borderTop: '1px dashed var(--border)', textAlign: 'center' }}>
-          <button onClick={() => window.location.reload()} style={{ padding: '10px 20px', background: 'var(--bg-element)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'bold' }}>
+          <button onClick={loadPedido} style={{ padding: '10px 20px', background: 'var(--bg-element)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 'bold', transition: 'background 0.15s ease' }}>
             🔄 Actualizar estado
           </button>
         </div>

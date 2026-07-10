@@ -87,13 +87,20 @@ export const crearPedido = async (datosPedido) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(datosPedido),
   });
-  return await response.json();
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.error || 'Error al crear el pedido');
+  }
+
+  return data;
 };
 
 // 6. Simular pedido enviándolo al backend real
-export const simularNuevoPedido = async (agencia) => {
+export const simularNuevoPedido = async (agenciaId) => {
   const datosSimulados = {
-    agencia_id: agencia.id,
+    agencia_id: agenciaId,
     cliente_nombre: "Cliente Simulado",
     cliente_telefono: "7000-0000",
     direccion_entrega: "Dirección de prueba MySQL",

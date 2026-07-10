@@ -81,6 +81,18 @@ body {
 button { font-family: inherit; cursor: pointer; }
 
 /* --- 3. LAYOUT --- */
+.skeleton-line {
+  background: linear-gradient(90deg, var(--bg-element) 25%, var(--border) 50%, var(--bg-element) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .page {
   background: var(--bg-body);
   min-height: 100vh;

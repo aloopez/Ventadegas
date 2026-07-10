@@ -11,9 +11,12 @@ import {
   getMetricasAgencia 
 } from "../services/api";
 import AdminLogin from "./AdminLogin";
+import { useToast } from "./Toast";
+import { SkeletonAdminCard } from "./Skeleton";
 
 export default function AdminPanel() {
   const { agenciaSlug } = useParams();
+  const toast = useToast();
   const [agencia, setAgencia] = useState(null);
 
   const [pedidos, setPedidos] = useState([]);
@@ -26,9 +29,18 @@ export default function AdminPanel() {
   // AHORA EL FILTRO SOPORTA 'dashboard', 'activos', 'todos', 'ajustes'
   const [filtro, setFiltro] = useState('dashboard'); // Abrimos por defecto en el dashboard
 
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem("adminAuth") === "true",
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    const authFlag = sessionStorage.getItem('adminAuth');
+    if (token && authFlag === 'true') {
+      setIsAuthenticated(true);
+    } else {
+      localStorage.removeItem('adminToken');
+      sessionStorage.removeItem('adminAuth');
+    }
+  }, []);
 
   const cargarPedidos = () => {
     getPedidosByAgencia(agenciaSlug).then((data) => {
@@ -134,11 +146,11 @@ export default function AdminPanel() {
 
   const handleActualizarPrecio = async (productoId, nuevoPrecio) => {
     const precioNumerico = parseFloat(nuevoPrecio);
-    if (isNaN(precioNumerico) || precioNumerico <= 0) return alert("Ingresa un precio válido");
+    if (isNaN(precioNumerico) || precioNumerico <= 0) return toast.error("Ingresa un precio válido");
     
     setProductos(productos.map(p => p.id === productoId ? { ...p, precio: precioNumerico } : p));
     await updatePrecioProducto(productoId, precioNumerico);
-    alert("¡Precio actualizado correctamente!");
+    toast.success("¡Precio actualizado correctamente!");
   };
 
   const handleLogin = () => {
@@ -147,7 +159,8 @@ export default function AdminPanel() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("adminAuth");
+    localStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminAuth');
     setIsAuthenticated(false);
   };
 
@@ -202,8 +215,10 @@ export default function AdminPanel() {
 
   if (!agencia)
     return (
-      <div style={{ textAlign: "center", padding: "50px" }}>
-        Cargando panel... ⏳
+      <div className="page" style={{ maxWidth: "600px", margin: "20px auto", padding: "20px" }}>
+        <SkeletonAdminCard />
+        <div style={{ height: "20px" }} />
+        <SkeletonAdminCard />
       </div>
     );
 
@@ -481,8 +496,10 @@ export default function AdminPanel() {
 
           </div>
         ) : loadingPedidos ? (
-          <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)" }}>
-            Obteniendo pedidos recientes... 🔄
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <SkeletonAdminCard />
+            <SkeletonAdminCard />
+            <SkeletonAdminCard />
           </div>
         ) : pedidosFiltrados.length === 0 ? (
           <div style={{ textAlign: "center", padding: "30px", color: "var(--text-muted)", background: "var(--bg-app)", borderRadius: "var(--radius-md)", border: "1px dashed var(--border-color)" }}>
